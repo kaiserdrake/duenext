@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Visibility {
+  PRIVATE
+  SHARED
+  CUSTOM
+}
+
+enum Channel {
+  EMAIL
+  NTFY
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  role            Role     @default(USER)
+  isActive        Boolean  @default(true)
+
+  ntfyServerUrl   String?
+  ntfyTopic       String?
+  ntfyAccessToken String?
+  notifyByEmail   Boolean  @default(true)
+  notifyByNtfy    Boolean  @default(false)
+
+  items           Item[]
+  reminderLogs    ReminderLog[]
+  sharedItems     ItemShare[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Item {
+  id              String        @id @default(cuid())
+  title           String
+  category        String?
+  dueDate         DateTime      @db.Date
+  // Optional "HH:mm" (24h) - a time of day for the due date, e.g. an
+  // appointment. When set, reminders are computed against this exact
+  // moment (in REMINDER_TIMEZONE); when absent, the item is treated as
+  // due at 00:00 that day.
+  dueTime         String?
+  notes           String?
+  visibility      Visibility    @default(PRIVATE)
+  // Minutes before the due date/time to send a reminder (e.g. 1440 = 1 day,
+  // 60 = 1 hour, 15 = 15 minutes). Negative values remind after.
+  reminderOffsetsMinutes Int[]  @default([43200, 20160, 10080, 1440, 0])
+  completedAt     DateTime?
+
+  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId         String
+
+  reminderLogs    ReminderLog[]
+  sharedWith      ItemShare[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([ownerId])
+  @@index([dueDate])
+  @@index([visibility])
+}
+
+// Explicit grantee list, only populated/consulted when Item.visibility = CUSTOM.
+model ItemShare {
+  id        String   @id @default(cuid())
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([itemId, userId])
+  @@index([userId])
+}
+
+// One row per (item, offset, channel, recipient) - dedupes sends per user,
+// which matters once SHARED/CUSTOM items fan out reminders to every viewer.
+model ReminderLog {
+  id            String   @id @default(cuid())
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  offsetMinutes Int
+  channel       Channel
+  sentAt        DateTime @default(now())
+
+  @@unique([itemId, userId, offsetMinutes, channel])
+  @@index([itemId])
+  @@index([userId])
+}

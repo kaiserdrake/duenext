@@ -1,0 +1,4 @@
+services:
+  duenext-app:
+    build:
+      context: .
