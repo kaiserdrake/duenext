@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import ReminderOffsetsInput from "@/components/ReminderOffsetsInput";
 import UserPicker from "@/components/UserPicker";
 import { CATEGORY_SUGGESTIONS, DEFAULT_REMINDER_OFFSETS_MINUTES } from "@/lib/constants";
@@ -45,7 +45,6 @@ export default function ItemForm({
   const [category, setCategory] = useState(initial?.category ?? "");
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [dueTime, setDueTime] = useState(initial?.dueTime ?? "");
-  const dueDateRef = useRef<HTMLInputElement>(null);
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [visibility, setVisibility] = useState<Visibility>(initial?.visibility ?? "PRIVATE");
   const [reminderOffsetsMinutes, setReminderOffsetsMinutes] = useState<number[]>(
@@ -149,39 +148,14 @@ export default function ItemForm({
       <div>
         <label className={labelClass}>Due date</label>
         <div className="flex gap-2">
-          <div className="relative min-w-0 flex-1">
-            <input
-              ref={dueDateRef}
-              type="date"
-              required
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              onClick={(e) => e.currentTarget.showPicker?.()}
-              className={`${inputClass} pr-9`}
-            />
-            <button
-              type="button"
-              tabIndex={-1}
-              onClick={() => dueDateRef.current?.showPicker?.()}
-              aria-label="Open calendar"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" />
-              </svg>
-            </button>
-          </div>
+          <input
+            type="date"
+            required
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            onClick={(e) => e.currentTarget.showPicker?.()}
+            className={`${controlClass} min-w-0 flex-1`}
+          />
           <input
             type="time"
             value={dueTime}
@@ -247,15 +221,23 @@ export default function ItemForm({
       </div>
 
       {isEdit && (
-        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={(e) => setCompleted(e.target.checked)}
-            className="h-auto w-auto"
-          />
-          Mark as done
-        </label>
+        <div>
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={(e) => setCompleted(e.target.checked)}
+              className="h-auto w-auto"
+            />
+            Mark as done
+          </label>
+          {completed && (
+            <p className="mt-1 text-xs text-slate-400">
+              This item is archived. Uncheck and set a new due date to make it active
+              again - reminders will start fresh for the new date.
+            </p>
+          )}
+        </div>
       )}
 
       <div className="mt-2 flex items-center justify-between">

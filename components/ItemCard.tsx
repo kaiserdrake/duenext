@@ -3,7 +3,13 @@ import { differenceInCalendarDays, format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
 import { formatDueTime } from "@/lib/dates";
 
-function dueLabel(dueDate: Date): { text: string; tone: "overdue" | "soon" | "normal" } {
+function dueLabel(
+  dueDate: Date,
+  completedAt: Date | null
+): { text: string; tone: "overdue" | "soon" | "normal" | "completed" } {
+  if (completedAt) {
+    return { text: `completed ${format(completedAt, "MMM d, yyyy")}`, tone: "completed" };
+  }
   const days = differenceInCalendarDays(dueDate, new Date());
   if (days < 0) {
     const n = Math.abs(days);
@@ -17,12 +23,14 @@ const toneClasses: Record<string, string> = {
   overdue: "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950",
   soon: "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
   normal: "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+  completed: "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50",
 };
 
 const toneTextClasses: Record<string, string> = {
   overdue: "text-red-700 dark:text-red-300",
   soon: "text-slate-500 dark:text-slate-400",
   normal: "text-slate-500 dark:text-slate-400",
+  completed: "text-slate-400 dark:text-slate-500",
 };
 
 export default function ItemCard({
@@ -32,7 +40,7 @@ export default function ItemCard({
   item: ItemWithRelations;
   currentUserId: string;
 }) {
-  const { text, tone } = dueLabel(item.dueDate);
+  const { text, tone } = dueLabel(item.dueDate, item.completedAt);
   const isOwner = item.ownerId === currentUserId;
 
   const visibilityLabel =

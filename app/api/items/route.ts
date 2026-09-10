@@ -4,16 +4,21 @@ import { requireUser } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { itemInputSchema } from "@/lib/validators/item";
 import { parseDateOnlyString } from "@/lib/dates";
-import { listVisibleItems, itemWithRelations } from "@/lib/items";
+import { listVisibleItems, itemWithRelations, type ItemStatus } from "@/lib/items";
+
+const VALID_STATUSES: ItemStatus[] = ["active", "completed", "all"];
 
 export async function GET(request: NextRequest) {
   try {
     const user = await requireUser();
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") ?? "all";
-    const includeCompleted = searchParams.get("includeCompleted") === "true";
+    const statusParam = searchParams.get("status");
+    const status = VALID_STATUSES.includes(statusParam as ItemStatus)
+      ? (statusParam as ItemStatus)
+      : "active";
 
-    const items = await listVisibleItems(user.id, { scope, includeCompleted });
+    const items = await listVisibleItems(user.id, { scope, status });
     return NextResponse.json({ items });
   } catch (error) {
     return handleApiError(error);

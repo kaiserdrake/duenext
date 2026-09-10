@@ -17,6 +17,9 @@ export default function NavBar({ user }: { user: CurrentUser }) {
             <Link href="/items/new" className="hover:text-slate-900 dark:hover:text-white">
               New item
             </Link>
+            <Link href="/archive" className="hover:text-slate-900 dark:hover:text-white">
+              Archive
+            </Link>
             <Link href="/profile" className="hover:text-slate-900 dark:hover:text-white">
               Profile
             </Link>

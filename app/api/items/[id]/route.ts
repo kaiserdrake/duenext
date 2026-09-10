@@ -54,31 +54,46 @@ export async function PATCH(
     const body = await request.json();
     const input = itemUpdateSchema.parse(body);
 
-    const item = await prisma.item.update({
-      where: { id },
-      data: {
-        title: input.title,
-        category: input.category === undefined ? undefined : input.category || null,
-        dueDate: input.dueDate ? parseDateOnlyString(input.dueDate) : undefined,
-        dueTime: input.dueTime === undefined ? undefined : input.dueTime || null,
-        notes: input.notes === undefined ? undefined : input.notes || null,
-        visibility: input.visibility,
-        reminderOffsetsMinutes: input.reminderOffsetsMinutes,
-        completedAt:
-          input.completedAt === undefined
-            ? undefined
-            : input.completedAt
-              ? new Date(input.completedAt)
-              : null,
-        sharedWith:
-          input.userIds !== undefined
-            ? {
-                deleteMany: {},
-                create: input.userIds.map((userId) => ({ userId })),
-              }
-            : undefined,
-      },
-      include: itemWithRelations,
+    // Reminder logs dedupe sends for a given due date/time. If either
+    // changes - most commonly when reactivating an archived item with a
+    // new due date - stale logs from the previous due date would wrongly
+    // suppress the new cycle's reminders, so clear them.
+    const newDueDate = input.dueDate ? parseDateOnlyString(input.dueDate) : undefined;
+    const newDueTime = input.dueTime === undefined ? undefined : input.dueTime || null;
+    const dueDateChanged = newDueDate !== undefined && newDueDate.getTime() !== existing.dueDate.getTime();
+    const dueTimeChanged = newDueTime !== undefined && newDueTime !== existing.dueTime;
+
+    const item = await prisma.$transaction(async (tx) => {
+      if (dueDateChanged || dueTimeChanged) {
+        await tx.reminderLog.deleteMany({ where: { itemId: id } });
+      }
+
+      return tx.item.update({
+        where: { id },
+        data: {
+          title: input.title,
+          category: input.category === undefined ? undefined : input.category || null,
+          dueDate: newDueDate,
+          dueTime: newDueTime,
+          notes: input.notes === undefined ? undefined : input.notes || null,
+          visibility: input.visibility,
+          reminderOffsetsMinutes: input.reminderOffsetsMinutes,
+          completedAt:
+            input.completedAt === undefined
+              ? undefined
+              : input.completedAt
+                ? new Date(input.completedAt)
+                : null,
+          sharedWith:
+            input.userIds !== undefined
+              ? {
+                  deleteMany: {},
+                  create: input.userIds.map((userId) => ({ userId })),
+                }
+              : undefined,
+        },
+        include: itemWithRelations,
+      });
     });
 
     return NextResponse.json({ item });

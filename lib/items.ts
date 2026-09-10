@@ -31,18 +31,23 @@ export function buildVisibilityWhere(
   return visibleOr;
 }
 
+export type ItemStatus = "active" | "completed" | "all";
+
+function statusWhere(status: ItemStatus): Prisma.ItemWhereInput {
+  if (status === "completed") return { completedAt: { not: null } };
+  if (status === "all") return {};
+  return { completedAt: null };
+}
+
 export async function listVisibleItems(
   userId: string,
-  options: { scope?: string; includeCompleted?: boolean } = {}
+  options: { scope?: string; status?: ItemStatus } = {}
 ): Promise<ItemWithRelations[]> {
-  const { scope = "all", includeCompleted = false } = options;
+  const { scope = "all", status = "active" } = options;
 
   return prisma.item.findMany({
     where: {
-      AND: [
-        buildVisibilityWhere(userId, scope),
-        includeCompleted ? {} : { completedAt: null },
-      ],
+      AND: [buildVisibilityWhere(userId, scope), statusWhere(status)],
     },
     include: itemWithRelations,
     orderBy: { dueDate: "asc" },
