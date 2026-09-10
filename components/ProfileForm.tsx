@@ -20,6 +20,7 @@ export interface ProfileFormValues {
   ntfyAccessToken: string;
   notifyByEmail: boolean;
   notifyByNtfy: boolean;
+  apiTokenSet: boolean;
 }
 
 export default function ProfileForm({
@@ -47,6 +48,69 @@ export default function ProfileForm({
   const [testNtfyStatus, setTestNtfyStatus] = useState<
     { type: "sending" } | { type: "success" } | { type: "error"; message: string } | null
   >(null);
+
+  const [apiTokenSet, setApiTokenSet] = useState(initial.apiTokenSet);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [tokenBusy, setTokenBusy] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenCopied, setTokenCopied] = useState(false);
+
+  async function handleGenerateToken() {
+    if (
+      apiTokenSet &&
+      !confirm("This replaces your current token - anything using it will stop working. Continue?")
+    ) {
+      return;
+    }
+    setTokenBusy(true);
+    setTokenError(null);
+    setTokenCopied(false);
+    try {
+      const res = await fetch("/api/profile/api-token", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setTokenError(data.error ?? "Failed to generate token");
+        return;
+      }
+      setGeneratedToken(data.token);
+      setApiTokenSet(true);
+    } catch {
+      setTokenError("Failed to generate token");
+    } finally {
+      setTokenBusy(false);
+    }
+  }
+
+  async function handleRevokeToken() {
+    if (!confirm("Revoke your API token? Anything using it will stop working.")) return;
+    setTokenBusy(true);
+    setTokenError(null);
+    try {
+      const res = await fetch("/api/profile/api-token", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setTokenError(data.error ?? "Failed to revoke token");
+        return;
+      }
+      setApiTokenSet(false);
+      setGeneratedToken(null);
+    } catch {
+      setTokenError("Failed to revoke token");
+    } finally {
+      setTokenBusy(false);
+    }
+  }
+
+  async function handleCopyToken() {
+    if (!generatedToken) return;
+    try {
+      await navigator.clipboard.writeText(generatedToken);
+      setTokenCopied(true);
+    } catch {
+      // Clipboard access can fail (permissions, non-secure context) - the
+      // token is still selectable/copyable by hand from the field itself.
+    }
+  }
 
   async function handleTestNtfy() {
     if (!ntfyTopic.trim()) {
@@ -222,6 +286,70 @@ export default function ProfileForm({
               <span className="text-xs text-red-600 dark:text-red-400">
                 {testNtfyStatus.message}
               </span>
+            )}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="rounded-md border border-slate-200 p-4 dark:border-slate-800">
+        <legend className="px-1 text-sm font-medium">API access</legend>
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            A personal token for calling duenext&apos;s API from scripts or automation, e.g.{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 dark:bg-slate-800">
+              Authorization: Bearer &lt;token&gt;
+            </code>
+            . One active token at a time - generating a new one invalidates the old.
+          </p>
+
+          {generatedToken && (
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+              <p className="mb-2 text-xs font-medium text-amber-800 dark:text-amber-300">
+                Copy this now - it won&apos;t be shown again.
+              </p>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  readOnly
+                  value={generatedToken}
+                  onFocus={(e) => e.target.select()}
+                  className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 font-mono text-xs outline-none dark:border-slate-700 dark:bg-slate-950"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyToken}
+                  className="h-9 shrink-0 rounded-md border border-slate-300 px-3 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                >
+                  {tokenCopied ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {apiTokenSet ? "Token active" : "No token set"}
+            </span>
+            <button
+              type="button"
+              onClick={handleGenerateToken}
+              disabled={tokenBusy}
+              className="h-8 shrink-0 rounded-md border border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              {apiTokenSet ? "Regenerate" : "Generate token"}
+            </button>
+            {apiTokenSet && (
+              <button
+                type="button"
+                onClick={handleRevokeToken}
+                disabled={tokenBusy}
+                className="h-8 shrink-0 rounded-md border border-slate-300 px-3 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-slate-700 dark:text-red-400 dark:hover:bg-red-950"
+              >
+                Revoke
+              </button>
+            )}
+            {tokenError && (
+              <span className="text-xs text-red-600 dark:text-red-400">{tokenError}</span>
             )}
           </div>
         </div>

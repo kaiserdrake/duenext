@@ -2,13 +2,14 @@ import Link from "next/link";
 import { differenceInCalendarDays, format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
 import { formatDueTime } from "@/lib/dates";
+import CategoryIcon from "@/components/CategoryIcon";
 
 function dueLabel(
   dueDate: Date,
   completedAt: Date | null
 ): { text: string; tone: "overdue" | "soon" | "normal" | "completed" } {
   if (completedAt) {
-    return { text: `completed ${format(completedAt, "MMM d, yyyy")}`, tone: "completed" };
+    return { text: `completed ${format(completedAt, "yyyy-MM-dd")}`, tone: "completed" };
   }
   const days = differenceInCalendarDays(dueDate, new Date());
   if (days < 0) {
@@ -52,13 +53,19 @@ export default function ItemCard({
 
   const content = (
     <>
-      <div>
-        <div className="text-sm font-medium">{item.title}</div>
-        <div className={`text-xs ${toneTextClasses[tone]}`}>
-          {item.category ? `${item.category} · ` : ""}
-          {text} · {format(item.dueDate, "MMM d, yyyy")}
-          {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
-          {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
+      <div className="flex items-center gap-2.5">
+        <CategoryIcon
+          category={item.category}
+          className="shrink-0 text-slate-400 dark:text-slate-500"
+        />
+        <div>
+          <div className="text-sm font-medium">{item.title}</div>
+          <div className={`text-xs ${toneTextClasses[tone]}`}>
+            {item.category ? `${item.category} · ` : ""}
+            {text} · {format(item.dueDate, "yyyy-MM-dd")}
+            {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
+            {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
+          </div>
         </div>
       </div>
       <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500" title={visibilityLabel}>

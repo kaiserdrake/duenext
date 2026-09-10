@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth-utils";
+import { requireApiUser } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { itemInputSchema } from "@/lib/validators/item";
 import { parseDateOnlyString } from "@/lib/dates";
@@ -10,7 +10,7 @@ const VALID_STATUSES: ItemStatus[] = ["active", "completed", "all"];
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") ?? "all";
     const statusParam = searchParams.get("status");
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const body = await request.json();
     const input = itemInputSchema.parse(body);
 

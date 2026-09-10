@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, AuthError } from "@/lib/auth-utils";
+import { requireApiAdmin, AuthError } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { userUpdateSchema } from "@/lib/validators/user";
 
@@ -15,11 +15,11 @@ const userSelect = {
 } as const;
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: RouteContext<"/api/users/[id]">
 ) {
   try {
-    await requireAdmin();
+    await requireApiAdmin(request);
     const { id } = await ctx.params;
     const user = await prisma.user.findUnique({ where: { id }, select: userSelect });
     if (!user) throw new AuthError("User not found", 404);
@@ -34,7 +34,7 @@ export async function PATCH(
   ctx: RouteContext<"/api/users/[id]">
 ) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireApiAdmin(request);
     const { id } = await ctx.params;
 
     const body = await request.json();
@@ -71,11 +71,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: RouteContext<"/api/users/[id]">
 ) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireApiAdmin(request);
     const { id } = await ctx.params;
 
     if (id === admin.id) {

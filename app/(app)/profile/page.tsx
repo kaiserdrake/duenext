@@ -21,6 +21,7 @@ export default async function ProfilePage() {
           ntfyAccessToken: profile.ntfyAccessToken ?? "",
           notifyByEmail: profile.notifyByEmail,
           notifyByNtfy: profile.notifyByNtfy,
+          apiTokenSet: profile.apiTokenHash !== null,
         }}
       />
     </div>

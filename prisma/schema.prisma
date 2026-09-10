@@ -37,6 +37,11 @@ model User {
   notifyByEmail   Boolean  @default(true)
   notifyByNtfy    Boolean  @default(false)
 
+  // SHA-256 hash of the user's personal API token (never store the raw
+  // token - it's only ever shown once, at generation time). One active
+  // token per user; regenerating replaces it, invalidating the old one.
+  apiTokenHash    String?  @unique
+
   items           Item[]
   reminderLogs    ReminderLog[]
   sharedItems     ItemShare[]

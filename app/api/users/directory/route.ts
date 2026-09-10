@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth-utils";
+import { requireApiUser } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    await requireUser();
+    await requireApiUser(request);
     const users = await prisma.user.findMany({
       // Admin accounts are for managing the app, not for picking as item
       // recipients, so they're left out of the "share with" picker.

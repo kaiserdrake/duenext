@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { requireUser, AuthError } from "@/lib/auth-utils";
+import { requireApiUser, AuthError } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { profileUpdateSchema } from "@/lib/validators/profile";
 
@@ -15,16 +15,26 @@ const profileSelect = {
   ntfyAccessToken: true,
   notifyByEmail: true,
   notifyByNtfy: true,
+  apiTokenHash: true,
 } as const;
 
-export async function GET() {
+// Never send the hash itself down the wire - just whether a token exists.
+function toProfileResponse(profile: { apiTokenHash: string | null } & Record<string, unknown>) {
+  const { apiTokenHash, ...rest } = profile;
+  return { ...rest, apiTokenSet: apiTokenHash !== null };
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const profile = await prisma.user.findUnique({
       where: { id: user.id },
       select: profileSelect,
     });
-    return NextResponse.json({ profile, defaultNtfyUrl: process.env.DEFAULT_NTFY_URL ?? null });
+    return NextResponse.json({
+      profile: profile ? toProfileResponse(profile) : null,
+      defaultNtfyUrl: process.env.DEFAULT_NTFY_URL ?? null,
+    });
   } catch (error) {
     return handleApiError(error);
   }
@@ -32,7 +42,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const body = await request.json();
     const input = profileUpdateSchema.parse(body);
 
@@ -65,7 +75,7 @@ export async function PATCH(request: NextRequest) {
       select: profileSelect,
     });
 
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile: toProfileResponse(profile) });
   } catch (error) {
     return handleApiError(error);
   }

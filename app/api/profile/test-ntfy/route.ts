@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
-import { requireUser, AuthError } from "@/lib/auth-utils";
+import { requireApiUser, AuthError } from "@/lib/auth-utils";
 import { sendTestNtfyNotification } from "@/lib/notifications/ntfy";
 
 const testNtfySchema = z.object({
@@ -11,7 +11,7 @@ const testNtfySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    await requireUser();
+    await requireApiUser(request);
     const body = await request.json();
     const input = testNtfySchema.parse(body);
 

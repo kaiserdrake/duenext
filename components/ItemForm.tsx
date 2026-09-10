@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import ReminderOffsetsInput from "@/components/ReminderOffsetsInput";
 import UserPicker from "@/components/UserPicker";
-import { CATEGORY_SUGGESTIONS, DEFAULT_REMINDER_OFFSETS_MINUTES } from "@/lib/constants";
+import CategorySelect from "@/components/CategorySelect";
+import DateInput from "@/components/DateInput";
+import { DEFAULT_REMINDER_OFFSETS_MINUTES } from "@/lib/constants";
 
 type Visibility = "PRIVATE" | "SHARED" | "CUSTOM";
 
@@ -130,32 +132,20 @@ export default function ItemForm({
 
       <div>
         <label className={labelClass}>Category</label>
-        <input
-          type="text"
-          list="category-suggestions"
+        <CategorySelect
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={setCategory}
           placeholder="Document"
           className={inputClass}
         />
-        <datalist id="category-suggestions">
-          {CATEGORY_SUGGESTIONS.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
       </div>
 
       <div>
         <label className={labelClass}>Due date</label>
         <div className="flex gap-2">
-          <input
-            type="date"
-            required
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            onClick={(e) => e.currentTarget.showPicker?.()}
-            className={`${controlClass} min-w-0 flex-1`}
-          />
+          <div className="min-w-0 flex-1">
+            <DateInput value={dueDate} onChange={setDueDate} required className={controlClass} />
+          </div>
           <input
             type="time"
             value={dueTime}

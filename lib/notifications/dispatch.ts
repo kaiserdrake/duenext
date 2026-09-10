@@ -30,8 +30,8 @@ export async function dispatchReminder({
   offsetMinutes,
 }: DispatchInput): Promise<void> {
   const dueDateLabel = dueTime
-    ? `${format(dueDate, "MMM d, yyyy")} at ${formatDueTime(dueTime)}`
-    : format(dueDate, "MMM d, yyyy");
+    ? `${format(dueDate, "yyyy-MM-dd")} at ${formatDueTime(dueTime)}`
+    : format(dueDate, "yyyy-MM-dd");
   const label = offsetLabel(offsetMinutes);
 
   if (channel === "EMAIL") {

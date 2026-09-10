@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireUser, AuthError } from "@/lib/auth-utils";
+import { requireApiUser, AuthError } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { itemUpdateSchema } from "@/lib/validators/item";
 import { parseDateOnlyString } from "@/lib/dates";
@@ -26,11 +26,11 @@ async function loadVisibleItem(id: string, userId: string) {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: RouteContext<"/api/items/[id]">
 ) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const { id } = await ctx.params;
     const item = await loadVisibleItem(id, user.id);
     return NextResponse.json({ item });
@@ -44,7 +44,7 @@ export async function PATCH(
   ctx: RouteContext<"/api/items/[id]">
 ) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const { id } = await ctx.params;
 
     const existing = await prisma.item.findUnique({ where: { id } });
@@ -103,11 +103,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: RouteContext<"/api/items/[id]">
 ) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser(request);
     const { id } = await ctx.params;
 
     const existing = await prisma.item.findUnique({ where: { id } });

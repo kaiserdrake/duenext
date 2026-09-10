@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-utils";
+import { requireApiAdmin } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { userCreateSchema } from "@/lib/validators/user";
 import { generateNtfyTopic } from "@/lib/notifications/topic";
@@ -15,9 +15,9 @@ const userSelect = {
   createdAt: true,
 } as const;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    await requireAdmin();
+    await requireApiAdmin(request);
     const users = await prisma.user.findMany({
       select: userSelect,
       orderBy: { createdAt: "asc" },
@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin();
+    await requireApiAdmin(request);
     const body = await request.json();
     const input = userCreateSchema.parse(body);
 
