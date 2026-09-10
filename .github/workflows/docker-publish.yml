@@ -22,9 +22,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute short SHA
+        id: vars
+        run: echo "sha_short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/kaiserdrake/duenext:latest
+          tags: |
+            ghcr.io/kaiserdrake/duenext:latest
+            ghcr.io/kaiserdrake/duenext:main-${{ steps.vars.outputs.sha_short }}
