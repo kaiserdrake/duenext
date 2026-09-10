@@ -24,6 +24,9 @@ services:
       - duenext-db
     networks:
       - duenext-network
+    labels:
+      # Shown as the container's icon in Unraid's Docker tab.
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/kaiserdrake/duenext/main/public/logo.png"
 
 networks:
   duenext-network:
