@@ -28,15 +28,34 @@ async function publishToNtfy({ recipient, title, message, tags }: PublishInput):
   // message can contain any Unicode text (e.g. Japanese), and HTTP headers
   // can only hold ISO-8859-1 bytes, so a non-Latin1 title in a header would
   // throw instead of sending.
-  const response = await fetch(serverUrl.replace(/\/+$/, ""), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ topic, title, message, priority: 3, tags }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(serverUrl.replace(/\/+$/, ""), {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ topic, title, message, priority: 3, tags }),
+    });
+  } catch (error) {
+    // A network-level failure (DNS, connection refused, TLS, etc.) throws a
+    // generic "fetch failed" TypeError - the actually useful detail is in
+    // `.cause`, which we'd otherwise lose.
+    throw new Error(`Could not reach ${serverUrl}: ${describeNetworkError(error)}`);
+  }
 
   if (!response.ok) {
     throw new Error(`ntfy publish failed: ${response.status} ${response.statusText}`);
   }
+}
+
+function describeNetworkError(error: unknown): string {
+  const cause = error instanceof Error ? error.cause : undefined;
+  if (cause && typeof cause === "object") {
+    const code = "code" in cause ? String(cause.code) : undefined;
+    const hostname = "hostname" in cause ? String(cause.hostname) : undefined;
+    if (code) return hostname ? `${code} (${hostname})` : code;
+    if ("message" in cause) return String(cause.message);
+  }
+  return error instanceof Error ? error.message : "unknown error";
 }
 
 export interface ReminderNtfyInput {
