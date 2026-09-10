@@ -24,6 +24,11 @@ services:
       - duenext-db
     networks:
       - duenext-network
+    extra_hosts:
+      # Router doesn't support NAT hairpinning, so resolving the public
+      # hostname from inside the LAN times out connecting back to itself.
+      # Point straight at the LAN IP of the NPM/ntfy host instead.
+      - "ntfy.laeradsphere.com:192.168.1.2"
     labels:
       # Shown as the container's icon in Unraid's Docker tab.
       net.unraid.docker.icon: "https://raw.githubusercontent.com/kaiserdrake/duenext/main/public/logo.png"
