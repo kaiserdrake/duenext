@@ -1,4 +1,4 @@
-import { differenceInCalendarDays } from "date-fns";
+import { classifyDueDate } from "@/lib/dates";
 import ItemCard from "@/components/ItemCard";
 import type { ItemWithRelations } from "@/lib/items";
 
@@ -6,15 +6,26 @@ function groupItems(items: ItemWithRelations[]) {
   const overdue: ItemWithRelations[] = [];
   const soon: ItemWithRelations[] = [];
   const upcoming: ItemWithRelations[] = [];
+  const later: ItemWithRelations[] = [];
 
   for (const item of items) {
-    const days = differenceInCalendarDays(item.dueDate, new Date());
-    if (days < 0) overdue.push(item);
-    else if (days <= 14) soon.push(item);
-    else upcoming.push(item);
+    switch (classifyDueDate(item.dueDate)) {
+      case "overdue":
+        overdue.push(item);
+        break;
+      case "soon":
+        soon.push(item);
+        break;
+      case "upcoming":
+        upcoming.push(item);
+        break;
+      case "later":
+        later.push(item);
+        break;
+    }
   }
 
-  return { overdue, soon, upcoming };
+  return { overdue, soon, upcoming, later };
 }
 
 function Section({
@@ -39,6 +50,28 @@ function Section({
   );
 }
 
+function LaterSection({
+  items,
+  currentUserId,
+}: {
+  items: ItemWithRelations[];
+  currentUserId: string;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <details className="mb-6">
+      <summary className="mb-2 cursor-pointer text-sm font-medium text-slate-400 dark:text-slate-500">
+        Later ({items.length})
+      </summary>
+      <div className="mt-2 flex flex-col gap-2">
+        {items.map((item) => (
+          <ItemCard key={item.id} item={item} currentUserId={currentUserId} />
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export default function ItemList({
   items,
   currentUserId,
@@ -54,13 +87,14 @@ export default function ItemList({
     );
   }
 
-  const { overdue, soon, upcoming } = groupItems(items);
+  const { overdue, soon, upcoming, later } = groupItems(items);
 
   return (
     <div>
       <Section title="Overdue" items={overdue} currentUserId={currentUserId} />
       <Section title="Due soon" items={soon} currentUserId={currentUserId} />
       <Section title="Upcoming" items={upcoming} currentUserId={currentUserId} />
+      <LaterSection items={later} currentUserId={currentUserId} />
     </div>
   );
 }

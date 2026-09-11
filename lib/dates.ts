@@ -1,4 +1,22 @@
+import { addMonths, differenceInCalendarDays } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
+
+/** Days out at which an item stops being "due soon" (see `classifyDueDate`). */
+export const DUE_SOON_DAYS = 14;
+
+/** Months out beyond which an item is bucketed as "later" rather than "upcoming". */
+export const UPCOMING_MONTHS = 6;
+
+export type DueBucket = "overdue" | "soon" | "upcoming" | "later";
+
+/** Buckets a due date relative to `today` for dashboard grouping and card styling. */
+export function classifyDueDate(dueDate: Date, today: Date = new Date()): DueBucket {
+  const days = differenceInCalendarDays(dueDate, today);
+  if (days < 0) return "overdue";
+  if (days <= DUE_SOON_DAYS) return "soon";
+  if (dueDate <= addMonths(today, UPCOMING_MONTHS)) return "upcoming";
+  return "later";
+}
 
 /** Today's date as YYYY-MM-DD in the given IANA timezone. */
 export function getTodayDateString(timeZone: string): string {

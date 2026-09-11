@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { differenceInCalendarDays, format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
-import { formatDueTime } from "@/lib/dates";
+import { DUE_SOON_DAYS, formatDueTime } from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
 
 function dueLabel(
@@ -17,7 +17,7 @@ function dueLabel(
     return { text: `overdue by ${n} day${n === 1 ? "" : "s"}`, tone: "overdue" };
   }
   if (days === 0) return { text: "due today", tone: "soon" };
-  return { text: `due in ${days} day${days === 1 ? "" : "s"}`, tone: days <= 14 ? "soon" : "normal" };
+  return { text: `due in ${days} day${days === 1 ? "" : "s"}`, tone: days <= DUE_SOON_DAYS ? "soon" : "normal" };
 }
 
 const toneClasses: Record<string, string> = {
