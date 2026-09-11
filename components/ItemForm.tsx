@@ -6,9 +6,10 @@ import ReminderOffsetsInput from "@/components/ReminderOffsetsInput";
 import UserPicker from "@/components/UserPicker";
 import CategorySelect from "@/components/CategorySelect";
 import DateInput from "@/components/DateInput";
-import { DEFAULT_REMINDER_OFFSETS_MINUTES } from "@/lib/constants";
+import { DEFAULT_REMINDER_OFFSETS_MINUTES, RECURRENCE_OPTIONS } from "@/lib/constants";
 
 type Visibility = "PRIVATE" | "SHARED" | "CUSTOM";
+type Recurrence = "MONTHLY" | "YEARLY" | "";
 
 export interface ItemFormValues {
   id?: string;
@@ -18,6 +19,7 @@ export interface ItemFormValues {
   dueTime: string;
   notes: string;
   visibility: Visibility;
+  recurrence: Recurrence;
   reminderOffsetsMinutes: number[];
   userIds: string[];
   completedAt: string | null;
@@ -47,6 +49,7 @@ export default function ItemForm({
   const [category, setCategory] = useState(initial?.category ?? "");
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [dueTime, setDueTime] = useState(initial?.dueTime ?? "");
+  const [recurrence, setRecurrence] = useState<Recurrence>(initial?.recurrence ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [visibility, setVisibility] = useState<Visibility>(initial?.visibility ?? "PRIVATE");
   const [reminderOffsetsMinutes, setReminderOffsetsMinutes] = useState<number[]>(
@@ -69,6 +72,7 @@ export default function ItemForm({
       dueTime: dueTime || null,
       notes: notes || null,
       visibility,
+      recurrence: recurrence || null,
       reminderOffsetsMinutes,
       userIds: visibility === "CUSTOM" ? userIds : [],
       ...(isEdit ? { completedAt: completed ? new Date().toISOString() : null } : {}),
@@ -155,6 +159,28 @@ export default function ItemForm({
             className={`${controlClass} w-36 shrink-0`}
           />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Repeats</label>
+        <select
+          value={recurrence}
+          onChange={(e) => setRecurrence(e.target.value as Recurrence)}
+          className={`${inputClass} sm:w-48`}
+        >
+          <option value="">Does not repeat</option>
+          {RECURRENCE_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {recurrence && (
+          <p className="mt-1 text-xs text-slate-400">
+            Once overdue, the due date jumps to the next {recurrence === "YEARLY" ? "year" : "month"}{" "}
+            automatically.
+          </p>
+        )}
       </div>
 
       <div>

@@ -10,5 +10,11 @@ export const CATEGORY_SUGGESTIONS = [
   "Subscription",
   "Bill",
   "Appointment",
+  "Event",
   "Other",
 ];
+
+export const RECURRENCE_OPTIONS = [
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "YEARLY", label: "Yearly" },
+] as const;

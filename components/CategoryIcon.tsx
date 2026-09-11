@@ -23,6 +23,17 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
       <path d="M16 2v4M8 2v4M3 10h18" />
     </>
   ),
+  event: (
+    <>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+      <path
+        d="M12 13l.94 1.9 2.1.31-1.52 1.48.36 2.09L12 17.77l-1.88 1.01.36-2.09-1.52-1.48 2.1-.31z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </>
+  ),
 };
 
 // Anything unrecognized (including a custom category someone typed, or "Other")

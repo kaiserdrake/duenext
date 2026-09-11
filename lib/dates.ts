@@ -18,6 +18,27 @@ export function classifyDueDate(dueDate: Date, today: Date = new Date()): DueBuc
   return "later";
 }
 
+/** Advances a UTC-midnight date-only value by one recurrence cycle. */
+export function advanceDueDate(dueDate: Date, recurrence: "MONTHLY" | "YEARLY"): Date {
+  const next = new Date(dueDate);
+  if (recurrence === "YEARLY") next.setUTCFullYear(next.getUTCFullYear() + 1);
+  else next.setUTCMonth(next.getUTCMonth() + 1);
+  return next;
+}
+
+/**
+ * Advances a recurring due date forward until it's on or after `today` -
+ * e.g. a birthdate entered as 1985-06-15 resolves to this year's (or next
+ * year's) anniversary. A no-op if `dueDate` is already current.
+ */
+export function rollDueDateForward(dueDate: Date, recurrence: "MONTHLY" | "YEARLY", today: Date): Date {
+  let next = dueDate;
+  while (next < today) {
+    next = advanceDueDate(next, recurrence);
+  }
+  return next;
+}
+
 /** Today's date as YYYY-MM-DD in the given IANA timezone. */
 export function getTodayDateString(timeZone: string): string {
   const formatter = new Intl.DateTimeFormat("en-CA", {

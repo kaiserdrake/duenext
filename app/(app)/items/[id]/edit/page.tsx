@@ -35,6 +35,7 @@ export default async function EditItemPage({
           dueTime: item.dueTime ?? "",
           notes: item.notes ?? "",
           visibility: item.visibility,
+          recurrence: item.recurrence ?? "",
           reminderOffsetsMinutes: item.reminderOffsetsMinutes,
           userIds: item.sharedWith.map((s) => s.userId),
           completedAt: item.completedAt ? item.completedAt.toISOString() : null,

@@ -64,6 +64,7 @@ export default function ItemCard({
             {item.category ? `${item.category} · ` : ""}
             {text} · {format(item.dueDate, "yyyy-MM-dd")}
             {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
+            {item.recurrence ? ` · ↻ ${item.recurrence === "YEARLY" ? "yearly" : "monthly"}` : ""}
             {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
           </div>
         </div>

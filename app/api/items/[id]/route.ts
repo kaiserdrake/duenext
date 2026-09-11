@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiUser, AuthError } from "@/lib/auth-utils";
 import { handleApiError } from "@/lib/api-utils";
 import { itemUpdateSchema } from "@/lib/validators/item";
-import { parseDateOnlyString } from "@/lib/dates";
+import { getTodayDateString, parseDateOnlyString, rollDueDateForward } from "@/lib/dates";
 import { itemWithRelations } from "@/lib/items";
 
 async function loadVisibleItem(id: string, userId: string) {
@@ -58,8 +58,21 @@ export async function PATCH(
     // changes - most commonly when reactivating an archived item with a
     // new due date - stale logs from the previous due date would wrongly
     // suppress the new cycle's reminders, so clear them.
-    const newDueDate = input.dueDate ? parseDateOnlyString(input.dueDate) : undefined;
+    let newDueDate = input.dueDate ? parseDateOnlyString(input.dueDate) : undefined;
     const newDueTime = input.dueTime === undefined ? undefined : input.dueTime || null;
+
+    // A recurring item's due date can be entered in the past (e.g. an
+    // actual birthdate, or recurrence just got added to an already-overdue
+    // item) - resolve it to the next upcoming occurrence right away, rather
+    // than leaving it overdue until the reminder job's next run.
+    const recurrence = input.recurrence === undefined ? existing.recurrence : input.recurrence || null;
+    if (recurrence) {
+      const base = newDueDate ?? existing.dueDate;
+      const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+      const todayDate = parseDateOnlyString(getTodayDateString(timezone));
+      if (base < todayDate) newDueDate = rollDueDateForward(base, recurrence, todayDate);
+    }
+
     const dueDateChanged = newDueDate !== undefined && newDueDate.getTime() !== existing.dueDate.getTime();
     const dueTimeChanged = newDueTime !== undefined && newDueTime !== existing.dueTime;
 
@@ -77,6 +90,7 @@ export async function PATCH(
           dueTime: newDueTime,
           notes: input.notes === undefined ? undefined : input.notes || null,
           visibility: input.visibility,
+          recurrence: input.recurrence === undefined ? undefined : recurrence,
           reminderOffsetsMinutes: input.reminderOffsetsMinutes,
           completedAt:
             input.completedAt === undefined

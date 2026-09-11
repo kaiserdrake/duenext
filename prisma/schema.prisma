@@ -23,6 +23,11 @@ enum Channel {
   NTFY
 }
 
+enum Recurrence {
+  MONTHLY
+  YEARLY
+}
+
 model User {
   id              String   @id @default(cuid())
   email           String   @unique
@@ -65,6 +70,10 @@ model Item {
   // Minutes before the due date/time to send a reminder (e.g. 1440 = 1 day,
   // 60 = 1 hour, 15 = 15 minutes). Negative values remind after.
   reminderOffsetsMinutes Int[]  @default([43200, 20160, 10080, 1440, 0])
+  // When set, the reminder job rolls dueDate forward by one cycle (and
+  // clears stale reminder logs) once the item goes overdue, instead of
+  // leaving it sitting in Overdue - e.g. a yearly birthday.
+  recurrence      Recurrence?
   completedAt     DateTime?
 
   owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)

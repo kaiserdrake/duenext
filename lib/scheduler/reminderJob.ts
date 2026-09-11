@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { computeDueInstant } from "@/lib/dates";
+import { computeDueInstant, getTodayDateString, parseDateOnlyString, rollDueDateForward } from "@/lib/dates";
 import { dispatchReminder } from "@/lib/notifications/dispatch";
 import type { Channel } from "@/lib/generated/prisma/enums";
 
@@ -17,6 +17,7 @@ interface RecipientCandidate {
 export async function runReminderJob(): Promise<void> {
   const timezone = process.env.REMINDER_TIMEZONE || "UTC";
   const now = new Date();
+  const todayDate = parseDateOnlyString(getTodayDateString(timezone));
 
   const [items, activeUsers] = await Promise.all([
     prisma.item.findMany({
@@ -33,6 +34,20 @@ export async function runReminderJob(): Promise<void> {
   const activeUsersById = new Map(activeUsers.map((u) => [u.id, u]));
 
   for (const item of items) {
+    // Recurring items roll forward once overdue, rather than sitting in
+    // Overdue forever - e.g. a yearly birthday jumps to next year. Reminder
+    // logs are cleared so the new cycle's reminders aren't suppressed by
+    // stale sends logged against the old due date.
+    if (item.recurrence && item.dueDate < todayDate) {
+      const nextDueDate = rollDueDateForward(item.dueDate, item.recurrence, todayDate);
+      await prisma.$transaction([
+        prisma.item.update({ where: { id: item.id }, data: { dueDate: nextDueDate } }),
+        prisma.reminderLog.deleteMany({ where: { itemId: item.id } }),
+      ]);
+      item.dueDate = nextDueDate;
+      item.reminderLogs = [];
+    }
+
     const dueInstant = computeDueInstant(item.dueDate, item.dueTime, timezone);
 
     const dueOffsets = item.reminderOffsetsMinutes.filter((offsetMinutes) => {

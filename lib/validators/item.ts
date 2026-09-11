@@ -15,6 +15,7 @@ const itemFieldsSchema = z.object({
     .or(z.literal("")),
   notes: z.string().trim().max(2000).optional().nullable(),
   visibility: z.enum(["PRIVATE", "SHARED", "CUSTOM"]),
+  recurrence: z.enum(["MONTHLY", "YEARLY"]).optional().nullable(),
   reminderOffsetsMinutes: z
     .array(
       z
