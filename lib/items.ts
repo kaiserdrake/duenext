@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { getMonthRange, getTodayDateString, parseDateOnlyString } from "@/lib/dates";
+import { getMonthRange, getWeekRange } from "@/lib/dates";
 
 export const itemWithRelations = {
   owner: { select: { id: true, name: true } },
@@ -74,36 +74,72 @@ export async function listVisibleItemsDueBetween(
   });
 }
 
-export interface MonthlySummary {
-  dueThisMonth: number;
-  overdue: number;
-  completedThisMonth: number;
+export interface CategoryCount {
+  category: string;
+  count: number;
 }
 
-export async function getMonthlySummary(userId: string, timeZone: string): Promise<MonthlySummary> {
+export interface DashboardSummaryData {
+  monthCategoryCounts: CategoryCount[];
+  subscriptions: { dueThisMonth: number; total: number };
+  appointments: { dueThisWeek: number; dueThisMonth: number; total: number };
+}
+
+/** Matches a category by exact name, case-insensitively - same convention as CategoryIcon. */
+function categoryWhere(name: string): Prisma.ItemWhereInput {
+  return { category: { equals: name, mode: "insensitive" } };
+}
+
+export async function getDashboardSummary(userId: string, timeZone: string): Promise<DashboardSummaryData> {
   const visible = buildVisibilityWhere(userId, "all");
+  const active = statusWhere("active");
   const { start: monthStart, end: monthEnd } = getMonthRange(timeZone);
-  const todayDate = parseDateOnlyString(getTodayDateString(timeZone));
+  const { start: weekStart, end: weekEnd } = getWeekRange(timeZone);
 
-  // completedAt has time-of-day precision (unlike dueDate), so the month's
-  // upper bound needs to be the start of the *next* month, exclusive -
-  // monthEnd itself is only midnight of the last day.
-  const nextMonthStart = new Date(monthEnd);
-  nextMonthStart.setUTCDate(nextMonthStart.getUTCDate() + 1);
+  const subscriptionFilter = categoryWhere("Subscription");
+  const appointmentFilter = categoryWhere("Appointment");
 
-  const [dueThisMonth, overdue, completedThisMonth] = await Promise.all([
-    prisma.item.count({
-      where: {
-        AND: [visible, statusWhere("active"), { dueDate: { gte: monthStart, lte: monthEnd } }],
-      },
+  const [
+    categoryCounts,
+    subscriptionsDueThisMonth,
+    subscriptionsTotal,
+    appointmentsDueThisWeek,
+    appointmentsDueThisMonth,
+    appointmentsTotal,
+  ] = await Promise.all([
+    prisma.item.groupBy({
+      by: ["category"],
+      where: { AND: [visible, active, { dueDate: { gte: monthStart, lte: monthEnd } }] },
+      _count: { _all: true },
     }),
     prisma.item.count({
-      where: { AND: [visible, statusWhere("active"), { dueDate: { lt: todayDate } }] },
+      where: { AND: [visible, active, subscriptionFilter, { dueDate: { gte: monthStart, lte: monthEnd } }] },
     }),
     prisma.item.count({
-      where: { AND: [visible, { completedAt: { gte: monthStart, lt: nextMonthStart } }] },
+      where: { AND: [visible, active, subscriptionFilter] },
+    }),
+    prisma.item.count({
+      where: { AND: [visible, active, appointmentFilter, { dueDate: { gte: weekStart, lte: weekEnd } }] },
+    }),
+    prisma.item.count({
+      where: { AND: [visible, active, appointmentFilter, { dueDate: { gte: monthStart, lte: monthEnd } }] },
+    }),
+    prisma.item.count({
+      where: { AND: [visible, active, appointmentFilter] },
     }),
   ]);
 
-  return { dueThisMonth, overdue, completedThisMonth };
+  const monthCategoryCounts = categoryCounts
+    .map(({ category, _count }) => ({ category: category?.trim() || "Uncategorized", count: _count._all }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    monthCategoryCounts,
+    subscriptions: { dueThisMonth: subscriptionsDueThisMonth, total: subscriptionsTotal },
+    appointments: {
+      dueThisWeek: appointmentsDueThisWeek,
+      dueThisMonth: appointmentsDueThisMonth,
+      total: appointmentsTotal,
+    },
+  };
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth-utils";
-import { listVisibleItems, listVisibleItemsDueBetween, getMonthlySummary } from "@/lib/items";
+import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary } from "@/lib/items";
 import { getMonthRange, getWeekRange } from "@/lib/dates";
 import ItemList from "@/components/ItemList";
 import DashboardSummary from "@/components/DashboardSummary";
@@ -13,7 +13,7 @@ export default async function DashboardPage() {
 
   const [items, summary, monthItems] = await Promise.all([
     listVisibleItems(user.id),
-    getMonthlySummary(user.id, timezone),
+    getDashboardSummary(user.id, timezone),
     listVisibleItemsDueBetween(user.id, month.start, month.end),
   ]);
 
