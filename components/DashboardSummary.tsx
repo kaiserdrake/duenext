@@ -55,6 +55,7 @@ export default function DashboardSummary({
   monthStart,
   monthEnd,
   currentWeekStart,
+  today,
   monthItems,
   currentUserId,
 }: {
@@ -62,6 +63,7 @@ export default function DashboardSummary({
   monthStart: string;
   monthEnd: string;
   currentWeekStart: string;
+  today: string;
   monthItems: ItemWithRelations[];
   currentUserId: string;
 }) {
@@ -91,6 +93,7 @@ export default function DashboardSummary({
           monthStart={monthStart}
           monthEnd={monthEnd}
           currentWeekStart={currentWeekStart}
+          today={today}
           items={monthItems}
           currentUserId={currentUserId}
         />

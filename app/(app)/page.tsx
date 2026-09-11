@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth-utils";
 import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary } from "@/lib/items";
-import { getMonthRange, getWeekRange } from "@/lib/dates";
+import { getMonthRange, getTodayDateString, getWeekRange } from "@/lib/dates";
 import ItemList from "@/components/ItemList";
 import DashboardSummary from "@/components/DashboardSummary";
 
@@ -33,6 +33,7 @@ export default async function DashboardPage() {
         monthStart={month.startLabel}
         monthEnd={month.endLabel}
         currentWeekStart={week.startLabel}
+        today={getTodayDateString(timezone)}
         monthItems={monthItems}
         currentUserId={user.id}
       />

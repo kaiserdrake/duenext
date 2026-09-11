@@ -40,12 +40,14 @@ export default function MonthInFocus({
   monthStart,
   monthEnd,
   currentWeekStart,
+  today,
   items,
   currentUserId,
 }: {
   monthStart: string;
   monthEnd: string;
   currentWeekStart: string;
+  today: string;
   items: ItemWithRelations[];
   currentUserId: string;
 }) {
@@ -113,51 +115,67 @@ export default function MonthInFocus({
         style={{ maxHeight: ROW_HEIGHT_PX * VISIBLE_DAYS }}
         className="flex flex-col divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800"
       >
-        {days.map((day) => (
-          <div
-            key={day.dateString}
-            ref={(el) => {
-              rowRefs.current[day.dateString] = el;
-            }}
-            className="flex shrink-0 items-start gap-3 py-1.5 text-sm"
-          >
-            <div className="w-16 shrink-0 text-xs text-slate-400 dark:text-slate-500">
-              {day.label} {format(day.date, "d")}
-            </div>
-            {day.items.length === 0 ? (
-              <span className="text-slate-300 dark:text-slate-600">—</span>
-            ) : (
-              <div className="flex flex-1 flex-wrap gap-x-4 gap-y-1">
-                {day.items.map((item) =>
-                  item.ownerId === currentUserId ? (
-                    <Link
-                      key={item.id}
-                      href={`/items/${item.id}/edit`}
-                      className="flex items-center gap-1.5 hover:underline"
-                    >
-                      <CategoryIcon
-                        category={item.category}
-                        className="shrink-0 text-slate-400 dark:text-slate-500"
-                      />
-                      {item.title}
-                    </Link>
-                  ) : (
-                    <span
-                      key={item.id}
-                      className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300"
-                    >
-                      <CategoryIcon
-                        category={item.category}
-                        className="shrink-0 text-slate-400 dark:text-slate-500"
-                      />
-                      {item.title}
-                    </span>
-                  )
+        {days.map((day) => {
+          const isToday = day.dateString === today;
+          return (
+            <div
+              key={day.dateString}
+              ref={(el) => {
+                rowRefs.current[day.dateString] = el;
+              }}
+              className={`flex shrink-0 items-start gap-3 py-1.5 text-sm ${
+                isToday ? "bg-slate-50 dark:bg-slate-800/50" : ""
+              }`}
+            >
+              <div
+                className={`w-16 shrink-0 text-xs ${
+                  isToday
+                    ? "font-medium text-slate-900 dark:text-slate-100"
+                    : "text-slate-400 dark:text-slate-500"
+                }`}
+              >
+                {day.label} {format(day.date, "d")}
+              </div>
+              <div className="flex flex-1 items-start justify-between gap-2">
+                {day.items.length === 0 ? (
+                  <span className="text-slate-300 dark:text-slate-600">—</span>
+                ) : (
+                  <div className="flex flex-1 flex-wrap gap-x-4 gap-y-1">
+                    {day.items.map((item) =>
+                      item.ownerId === currentUserId ? (
+                        <Link
+                          key={item.id}
+                          href={`/items/${item.id}/edit`}
+                          className="flex items-center gap-1.5 hover:underline"
+                        >
+                          <CategoryIcon
+                            category={item.category}
+                            className="shrink-0 text-slate-400 dark:text-slate-500"
+                          />
+                          {item.title}
+                        </Link>
+                      ) : (
+                        <span
+                          key={item.id}
+                          className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300"
+                        >
+                          <CategoryIcon
+                            category={item.category}
+                            className="shrink-0 text-slate-400 dark:text-slate-500"
+                          />
+                          {item.title}
+                        </span>
+                      )
+                    )}
+                  </div>
+                )}
+                {isToday && (
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
                 )}
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
