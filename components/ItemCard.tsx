@@ -37,9 +37,11 @@ const toneTextClasses: Record<string, string> = {
 export default function ItemCard({
   item,
   currentUserId,
+  showTemplateAction = false,
 }: {
   item: ItemWithRelations;
   currentUserId: string;
+  showTemplateAction?: boolean;
 }) {
   const { text, tone } = dueLabel(item.dueDate, item.completedAt);
   const isOwner = item.ownerId === currentUserId;
@@ -51,34 +53,55 @@ export default function ItemCard({
         ? "All users"
         : "Specific users";
 
-  const content = (
-    <>
-      <div className="flex items-center gap-2.5">
-        <CategoryIcon
-          category={item.category}
-          className="shrink-0 text-slate-400 dark:text-slate-500"
-        />
-        <div>
-          <div className="text-sm font-medium">{item.title}</div>
-          <div className={`text-xs ${toneTextClasses[tone]}`}>
-            {item.category ? `${item.category} · ` : ""}
-            {text} · {format(item.dueDate, "yyyy-MM-dd")}
-            {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
-            {item.recurrence ? ` · ↻ ${item.recurrence === "YEARLY" ? "yearly" : "monthly"}` : ""}
-            {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
-          </div>
+  const left = (
+    <div className="flex items-center gap-2.5">
+      <CategoryIcon
+        category={item.category}
+        className="shrink-0 text-slate-400 dark:text-slate-500"
+      />
+      <div>
+        <div className="text-sm font-medium">{item.title}</div>
+        <div className={`text-xs ${toneTextClasses[tone]}`}>
+          {item.category ? `${item.category} · ` : ""}
+          {text} · {format(item.dueDate, "yyyy-MM-dd")}
+          {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
+          {item.recurrence ? ` · ↻ ${item.recurrence === "YEARLY" ? "yearly" : "monthly"}` : ""}
+          {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
         </div>
       </div>
-      <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500" title={visibilityLabel}>
-        {visibilityLabel}
-      </span>
-    </>
+    </div>
+  );
+
+  const visibilityBadge = (
+    <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500" title={visibilityLabel}>
+      {visibilityLabel}
+    </span>
   );
 
   if (!isOwner) {
     return (
       <div className={`flex items-center justify-between rounded-md border px-4 py-3 ${toneClasses[tone]}`}>
-        {content}
+        {left}
+        {visibilityBadge}
+      </div>
+    );
+  }
+
+  if (showTemplateAction) {
+    return (
+      <div className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 ${toneClasses[tone]}`}>
+        <Link href={`/items/${item.id}/edit`} className="min-w-0 flex-1 hover:opacity-80">
+          {left}
+        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          {visibilityBadge}
+          <Link
+            href={`/items/new?templateId=${item.id}`}
+            className="text-xs text-slate-500 underline hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            Use as template
+          </Link>
+        </div>
       </div>
     );
   }
@@ -88,7 +111,8 @@ export default function ItemCard({
       href={`/items/${item.id}/edit`}
       className={`flex items-center justify-between rounded-md border px-4 py-3 hover:border-slate-400 dark:hover:border-slate-600 ${toneClasses[tone]}`}
     >
-      {content}
+      {left}
+      {visibilityBadge}
     </Link>
   );
 }
