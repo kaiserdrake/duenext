@@ -20,6 +20,9 @@ export default function NavBar({ user }: { user: CurrentUser }) {
             <Link href="/archive" className="hover:text-slate-900 dark:hover:text-white">
               Archive
             </Link>
+            <Link href="/todos" className="hover:text-slate-900 dark:hover:text-white">
+              To-Do
+            </Link>
             <Link href="/profile" className="hover:text-slate-900 dark:hover:text-white">
               Profile
             </Link>

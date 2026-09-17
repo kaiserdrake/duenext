@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Todo" ADD COLUMN "notes" TEXT,
+ADD COLUMN "sortOrder" INTEGER NOT NULL DEFAULT 0;

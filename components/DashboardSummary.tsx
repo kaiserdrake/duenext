@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CategoryCount, DashboardSummaryData, ItemWithRelations } from "@/lib/items";
 import MonthInFocus from "@/components/MonthInFocus";
 
@@ -50,6 +51,19 @@ function RatioTile({
   );
 }
 
+function TodoTile({ count }: { count: number }) {
+  return (
+    <Link
+      href="/todos"
+      className="rounded-md bg-slate-50 p-3 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800"
+    >
+      <div className="text-xs text-slate-500 dark:text-slate-400">To-Do</div>
+      <div className="text-2xl font-medium">{count}</div>
+      <div className="text-xs text-slate-400 dark:text-slate-500">{count === 1 ? "item" : "items"} open</div>
+    </Link>
+  );
+}
+
 export default function DashboardSummary({
   summary,
   monthStart,
@@ -58,6 +72,7 @@ export default function DashboardSummary({
   today,
   monthItems,
   currentUserId,
+  openTodoCount,
 }: {
   summary: DashboardSummaryData;
   monthStart: string;
@@ -66,10 +81,11 @@ export default function DashboardSummary({
   today: string;
   monthItems: ItemWithRelations[];
   currentUserId: string;
+  openTodoCount: number;
 }) {
   return (
     <div className="mb-6 rounded-md border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <MonthSummaryTile counts={summary.monthCategoryCounts} />
         <RatioTile
           label="Subscriptions"
@@ -86,6 +102,7 @@ export default function DashboardSummary({
             { value: summary.appointments.total, caption: "total" },
           ]}
         />
+        <TodoTile count={openTodoCount} />
       </div>
 
       <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">

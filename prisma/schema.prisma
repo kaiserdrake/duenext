@@ -50,6 +50,7 @@ model User {
   items           Item[]
   reminderLogs    ReminderLog[]
   sharedItems     ItemShare[]
+  todos           Todo[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -88,6 +89,25 @@ model Item {
   @@index([ownerId])
   @@index([dueDate])
   @@index([visibility])
+}
+
+// Plain checklist, separate from Item - no due date, visibility or reminders.
+model Todo {
+  id        String   @id @default(cuid())
+  title     String
+  notes     String?
+  done      Boolean  @default(false)
+  // Manual priority order (lower sorts first) within the owner's list.
+  // Assigned append-at-the-end on create; reordering swaps two rows' values.
+  sortOrder Int      @default(0)
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
 }
 
 // Explicit grantee list, only populated/consulted when Item.visibility = CUSTOM.
