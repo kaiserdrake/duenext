@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
 import { toDateOnlyString, parseDateOnlyString } from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const VISIBLE_DAYS = 7;
 // Matches the row's actual rendered height (py-1.5 + text-sm line height),
 // so the scroll container shows exactly VISIBLE_DAYS rows without a partial
@@ -39,6 +39,8 @@ function ResetIcon() {
 export default function MonthInFocus({
   monthStart,
   monthEnd,
+  focusStart,
+  focusEnd,
   currentWeekStart,
   today,
   items,
@@ -46,6 +48,8 @@ export default function MonthInFocus({
 }: {
   monthStart: string;
   monthEnd: string;
+  focusStart: string;
+  focusEnd: string;
   currentWeekStart: string;
   today: string;
   items: ItemWithRelations[];
@@ -54,8 +58,10 @@ export default function MonthInFocus({
   const containerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const start = parseDateOnlyString(monthStart);
-  const end = parseDateOnlyString(monthEnd);
+  // Rows span whole weeks (focusStart..focusEnd) so a week straddling a
+  // month boundary is always complete; days outside the month are dimmed.
+  const start = parseDateOnlyString(focusStart);
+  const end = parseDateOnlyString(focusEnd);
   const dayCount = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
 
   const itemsByDay = new Map<string, ItemWithRelations[]>();
@@ -74,6 +80,7 @@ export default function MonthInFocus({
       label: DAY_LABELS[date.getUTCDay() === 0 ? 6 : date.getUTCDay() - 1],
       date,
       dateString,
+      inMonth: dateString >= monthStart && dateString <= monthEnd,
       items: itemsByDay.get(dateString) ?? [],
     };
   });
@@ -125,7 +132,7 @@ export default function MonthInFocus({
               }}
               className={`flex shrink-0 items-start gap-3 py-1.5 text-sm ${
                 isToday ? "bg-slate-50 dark:bg-slate-800/50" : ""
-              }`}
+              } ${day.inMonth ? "" : "opacity-50"}`}
             >
               <div
                 className={`w-16 shrink-0 text-xs ${
@@ -134,7 +141,10 @@ export default function MonthInFocus({
                     : "text-slate-400 dark:text-slate-500"
                 }`}
               >
-                {day.label} {format(day.date, "d")}
+                {day.label} {/* UTC getters, not date-fns format() - day.date is a UTC-midnight
+                    date-only value and must not shift with the browser's timezone. */}
+                {!day.inMonth && `${MONTH_LABELS[day.date.getUTCMonth()]} `}
+                {day.date.getUTCDate()}
               </div>
               <div className="flex flex-1 items-start justify-between gap-2">
                 {day.items.length === 0 ? (

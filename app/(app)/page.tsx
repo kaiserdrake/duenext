@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary } from "@/lib/items";
-import { getMonthRange, getTodayDateString, getWeekRange } from "@/lib/dates";
+import { getMonthRange, getMonthWeeksRange, getTodayDateString, getWeekRange } from "@/lib/dates";
 import ItemList from "@/components/ItemList";
 import DashboardSummary from "@/components/DashboardSummary";
 
@@ -11,11 +11,12 @@ export default async function DashboardPage() {
   const timezone = process.env.REMINDER_TIMEZONE || "UTC";
   const month = getMonthRange(timezone);
   const week = getWeekRange(timezone);
+  const focus = getMonthWeeksRange(timezone);
 
   const [items, summary, monthItems, openTodoCount] = await Promise.all([
     listVisibleItems(user.id),
     getDashboardSummary(user.id, timezone),
-    listVisibleItemsDueBetween(user.id, month.start, month.end),
+    listVisibleItemsDueBetween(user.id, focus.start, focus.end),
     prisma.todo.count({ where: { ownerId: user.id, done: false } }),
   ]);
 
@@ -34,6 +35,8 @@ export default async function DashboardPage() {
         summary={summary}
         monthStart={month.startLabel}
         monthEnd={month.endLabel}
+        focusStart={focus.startLabel}
+        focusEnd={focus.endLabel}
         currentWeekStart={week.startLabel}
         today={getTodayDateString(timezone)}
         monthItems={monthItems}

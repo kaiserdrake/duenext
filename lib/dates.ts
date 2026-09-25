@@ -125,6 +125,25 @@ export function getWeekRange(timeZone: string): DateRange {
   });
 }
 
+/**
+ * The current month padded out to whole Monday-Sunday weeks - from the Monday
+ * on/before the 1st to the Sunday on/after the last day. Guarantees the
+ * current week is fully contained even when it straddles a month boundary.
+ */
+export function getMonthWeeksRange(timeZone: string): DateRange {
+  const month = getMonthRange(timeZone);
+  const start = new Date(month.start);
+  start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+  const end = new Date(month.end);
+  end.setUTCDate(end.getUTCDate() + ((7 - end.getUTCDay()) % 7));
+  return {
+    start,
+    end,
+    startLabel: toDateOnlyString(start),
+    endLabel: toDateOnlyString(end),
+  };
+}
+
 /** The current calendar month containing "today" in `timeZone`. */
 export function getMonthRange(timeZone: string): DateRange {
   const todayString = getTodayDateString(timeZone);

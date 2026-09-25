@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { differenceInCalendarDays, format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
-import { DUE_SOON_DAYS, formatDueTime } from "@/lib/dates";
+import { DUE_SOON_DAYS, formatDueTime, toDateOnlyString } from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
 
 function dueLabel(
@@ -63,7 +63,7 @@ export default function ItemCard({
         <div className="text-sm font-medium">{item.title}</div>
         <div className={`text-xs ${toneTextClasses[tone]}`}>
           {item.category ? `${item.category} · ` : ""}
-          {text} · {format(item.dueDate, "yyyy-MM-dd")}
+          {text} · {toDateOnlyString(item.dueDate)}
           {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
           {item.recurrence ? ` · ↻ ${item.recurrence === "YEARLY" ? "yearly" : "monthly"}` : ""}
           {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}

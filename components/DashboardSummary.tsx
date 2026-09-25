@@ -68,6 +68,8 @@ export default function DashboardSummary({
   summary,
   monthStart,
   monthEnd,
+  focusStart,
+  focusEnd,
   currentWeekStart,
   today,
   monthItems,
@@ -77,6 +79,8 @@ export default function DashboardSummary({
   summary: DashboardSummaryData;
   monthStart: string;
   monthEnd: string;
+  focusStart: string;
+  focusEnd: string;
   currentWeekStart: string;
   today: string;
   monthItems: ItemWithRelations[];
@@ -109,6 +113,8 @@ export default function DashboardSummary({
         <MonthInFocus
           monthStart={monthStart}
           monthEnd={monthEnd}
+          focusStart={focusStart}
+          focusEnd={focusEnd}
           currentWeekStart={currentWeekStart}
           today={today}
           items={monthItems}
