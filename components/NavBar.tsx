@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import SignOutButton from "@/components/SignOutButton";
+import { useState, type ReactNode } from "react";
 import type { CurrentUser } from "@/lib/auth-utils";
 
 const NAV_LINKS = [
@@ -35,7 +34,18 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function NavBar({ user }: { user: CurrentUser }) {
+export default function NavBar({
+  user,
+  signOutButton,
+}: {
+  user: CurrentUser;
+  // Rendered by the parent Server Component and passed down, rather than
+  // imported here directly - SignOutButton calls the server-only `signOut`
+  // (which pulls in Prisma/pg), and importing a Server Component into a
+  // "use client" module bundles it (and its server-only deps) for the
+  // browser, breaking the build.
+  signOutButton: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const links =
     user.role === "ADMIN" ? [...NAV_LINKS, { href: "/admin/users", label: "Settings" }] : NAV_LINKS;
@@ -57,7 +67,7 @@ export default function NavBar({ user }: { user: CurrentUser }) {
         </div>
         <div className="hidden items-center gap-4 sm:flex">
           <span className="text-sm text-slate-500 dark:text-slate-400">{user.name}</span>
-          <SignOutButton />
+          {signOutButton}
         </div>
         <button
           type="button"
@@ -83,7 +93,7 @@ export default function NavBar({ user }: { user: CurrentUser }) {
           ))}
           <div className="mt-2 flex items-center justify-between border-t border-slate-200 px-2 pt-3 dark:border-slate-800">
             <span className="text-sm text-slate-500 dark:text-slate-400">{user.name}</span>
-            <SignOutButton />
+            {signOutButton}
           </div>
         </nav>
       )}

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import NavBar from "@/components/NavBar";
+import SignOutButton from "@/components/SignOutButton";
 import { getCurrentUser } from "@/lib/auth-utils";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -8,7 +9,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <NavBar user={user} />
+      <NavBar user={user} signOutButton={<SignOutButton />} />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
     </div>
   );
