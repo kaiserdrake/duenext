@@ -89,7 +89,9 @@ export default function DashboardSummary({
 }) {
   return (
     <div className="mb-6 rounded-md border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* The summary tiles just add clutter on a phone-sized screen, where
+          the calendar below is what people actually come here for. */}
+      <div className="hidden grid-cols-2 gap-3 sm:grid sm:grid-cols-4">
         <MonthSummaryTile counts={summary.monthCategoryCounts} />
         <RatioTile
           label="Subscriptions"
@@ -109,7 +111,7 @@ export default function DashboardSummary({
         <TodoTile count={openTodoCount} />
       </div>
 
-      <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+      <div className="sm:mt-4 sm:border-t sm:border-slate-200 sm:pt-4 sm:dark:border-slate-800">
         <MonthInFocus
           monthStart={monthStart}
           monthEnd={monthEnd}
