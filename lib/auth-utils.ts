@@ -56,7 +56,30 @@ export async function getApiUser(request: NextRequest): Promise<CurrentUser | nu
     return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
 
+  // The session cookie may be SameSite=None (see AUTH_ALLOW_EMBED in auth.ts),
+  // in which case browsers attach it to requests from any site - so refuse
+  // cookie-authenticated writes that another site initiated (CSRF).
+  if (isCrossSiteWrite(request)) return null;
+
   return getCurrentUser();
+}
+
+function isCrossSiteWrite(request: NextRequest): boolean {
+  if (request.method === "GET" || request.method === "HEAD") return false;
+
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite) return fetchSite === "cross-site";
+
+  // Older browsers without Sec-Fetch-Site: fall back to comparing Origin
+  // against the host the request was sent to (as seen through the proxy).
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  try {
+    return new URL(origin).host !== host;
+  } catch {
+    return true;
+  }
 }
 
 export async function requireApiUser(request: NextRequest): Promise<CurrentUser> {

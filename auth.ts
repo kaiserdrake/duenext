@@ -4,13 +4,39 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@/lib/generated/prisma/enums";
 
+// Auth.js's default SameSite=Lax cookies aren't sent (or are blocked outright
+// as third-party cookies) when DueNext runs inside another site's iframe,
+// e.g. a Home Assistant Webpage dashboard - so every visit lands on /login.
+// AUTH_ALLOW_EMBED switches the auth cookies to SameSite=None (which requires
+// Secure, i.e. HTTPS) and Partitioned (CHIPS), so browsers that block
+// third-party cookies still keep a separate jar for the embedded copy.
+const embedCookieOptions = {
+  httpOnly: true,
+  sameSite: "none",
+  path: "/",
+  secure: true,
+  partitioned: true,
+} as const;
+
+const embedCookies =
+  process.env.AUTH_ALLOW_EMBED === "true"
+    ? {
+        sessionToken: { name: "__Secure-authjs.session-token", options: embedCookieOptions },
+        callbackUrl: { name: "__Secure-authjs.callback-url", options: embedCookieOptions },
+        csrfToken: { name: "__Host-authjs.csrf-token", options: embedCookieOptions },
+      }
+    : undefined;
+
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
   signOut,
 } = NextAuth({
-  session: { strategy: "jwt" },
+  // 120 days. The proxy re-issues the JWT cookie with a fresh expiry as you
+  // browse, so this is really "signed out after 120 days of not visiting".
+  session: { strategy: "jwt", maxAge: 120 * 24 * 60 * 60 },
+  cookies: embedCookies,
   pages: {
     signIn: "/login",
   },

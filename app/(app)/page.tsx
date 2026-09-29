@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth-utils";
-import { prisma } from "@/lib/prisma";
 import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary } from "@/lib/items";
 import { getMonthRange, getMonthWeeksRange, getTodayDateString, getWeekRange } from "@/lib/dates";
 import ItemList from "@/components/ItemList";
@@ -13,11 +12,10 @@ export default async function DashboardPage() {
   const week = getWeekRange(timezone);
   const focus = getMonthWeeksRange(timezone);
 
-  const [items, summary, monthItems, openTodoCount] = await Promise.all([
+  const [items, summary, monthItems] = await Promise.all([
     listVisibleItems(user.id),
     getDashboardSummary(user.id, timezone),
     listVisibleItemsDueBetween(user.id, focus.start, focus.end),
-    prisma.todo.count({ where: { ownerId: user.id, done: false } }),
   ]);
 
   return (
@@ -41,7 +39,6 @@ export default async function DashboardPage() {
         today={getTodayDateString(timezone)}
         monthItems={monthItems}
         currentUserId={user.id}
-        openTodoCount={openTodoCount}
       />
       <ItemList items={items} currentUserId={user.id} timeZone={timezone} />
     </div>
