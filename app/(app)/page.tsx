@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth-utils";
-import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary } from "@/lib/items";
+import { listVisibleItems, listVisibleItemsDueBetween, getDashboardSummary, listHiddenItemIds } from "@/lib/items";
 import { getMonthRange, getMonthWeeksRange, getTodayDateString, getWeekRange } from "@/lib/dates";
 import ItemList from "@/components/ItemList";
 import DashboardSummary from "@/components/DashboardSummary";
@@ -12,10 +12,11 @@ export default async function DashboardPage() {
   const week = getWeekRange(timezone);
   const focus = getMonthWeeksRange(timezone);
 
-  const [items, summary, monthItems] = await Promise.all([
+  const [items, summary, monthItems, hiddenItemIds] = await Promise.all([
     listVisibleItems(user.id),
     getDashboardSummary(user.id, timezone),
     listVisibleItemsDueBetween(user.id, focus.start, focus.end),
+    listHiddenItemIds(user.id),
   ]);
 
   return (
@@ -40,7 +41,7 @@ export default async function DashboardPage() {
         monthItems={monthItems}
         currentUserId={user.id}
       />
-      <ItemList items={items} currentUserId={user.id} timeZone={timezone} />
+      <ItemList items={items} currentUserId={user.id} timeZone={timezone} hiddenItemIds={hiddenItemIds} />
     </div>
   );
 }

@@ -50,6 +50,7 @@ model User {
   items           Item[]
   reminderLogs    ReminderLog[]
   sharedItems     ItemShare[]
+  hiddenItems     ItemHide[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -81,6 +82,7 @@ model Item {
 
   reminderLogs    ReminderLog[]
   sharedWith      ItemShare[]
+  hiddenBy        ItemHide[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -88,6 +90,23 @@ model Item {
   @@index([ownerId])
   @@index([dueDate])
   @@index([visibility])
+}
+
+// A user dismissing an overdue item from their own dashboard ("hold to
+// hide"). Per user, since shared items show up for several people. Pinned to
+// the due date it was hidden at: only counts while item.dueDate still equals
+// it, so rescheduling (or a recurrence rolling forward) brings it back.
+model ItemHide {
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  dueDate   DateTime @db.Date
+
+  createdAt DateTime @default(now())
+
+  @@id([itemId, userId])
+  @@index([userId])
 }
 
 // Explicit grantee list, only populated/consulted when Item.visibility = CUSTOM.

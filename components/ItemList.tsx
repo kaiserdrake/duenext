@@ -1,5 +1,6 @@
 import { classifyDueDate } from "@/lib/dates";
 import ItemCard from "@/components/ItemCard";
+import OverdueSection from "@/components/OverdueSection";
 import type { ItemWithRelations } from "@/lib/items";
 
 function groupItems(items: ItemWithRelations[]) {
@@ -78,10 +79,13 @@ export default function ItemList({
   items,
   currentUserId,
   timeZone,
+  hiddenItemIds = [],
 }: {
   items: ItemWithRelations[];
   currentUserId: string;
   timeZone: string;
+  /** Overdue items the user has hidden; they sit behind a "Show hidden" toggle. */
+  hiddenItemIds?: string[];
 }) {
   if (items.length === 0) {
     return (
@@ -92,12 +96,19 @@ export default function ItemList({
   }
 
   const { overdue, soon, upcoming, later } = groupItems(items);
+  const hidden = new Set(hiddenItemIds);
 
   return (
     <div>
-      <Section title="Overdue" items={overdue} currentUserId={currentUserId} />
       <Section title="Due soon" items={soon} currentUserId={currentUserId} countdownTimeZone={timeZone} />
       <Section title="Upcoming" items={upcoming} currentUserId={currentUserId} />
+      {/* Below Upcoming on purpose: overdue items are often ones there's
+          nothing left to do about, so they shouldn't lead the page. */}
+      <OverdueSection
+        visibleItems={overdue.filter((item) => !hidden.has(item.id))}
+        hiddenItems={overdue.filter((item) => hidden.has(item.id))}
+        currentUserId={currentUserId}
+      />
       <LaterSection items={later} currentUserId={currentUserId} />
     </div>
   );

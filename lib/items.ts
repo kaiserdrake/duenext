@@ -74,6 +74,20 @@ export async function listVisibleItemsDueBetween(
   });
 }
 
+/**
+ * IDs of items `userId` has hidden from their Overdue list. A hide only
+ * counts while the item's due date is still the one it was hidden at.
+ */
+export async function listHiddenItemIds(userId: string): Promise<string[]> {
+  const hides = await prisma.itemHide.findMany({
+    where: { userId },
+    select: { itemId: true, dueDate: true, item: { select: { dueDate: true } } },
+  });
+  return hides
+    .filter((hide) => hide.dueDate.getTime() === hide.item.dueDate.getTime())
+    .map((hide) => hide.itemId);
+}
+
 export interface CategoryCount {
   category: string;
   count: number;
