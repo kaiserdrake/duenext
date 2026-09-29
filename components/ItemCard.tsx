@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { differenceInCalendarDays, format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
-import { DUE_SOON_DAYS, formatDueTime, toDateOnlyString } from "@/lib/dates";
+import { DUE_SOON_DAYS, computeDueInstant, formatDueTime, toDateOnlyString } from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
+import DueCountdown from "@/components/DueCountdown";
+
+/** How far out the countdown ring starts draining; items further out show a full ring. */
+const COUNTDOWN_WINDOW_DAYS = 5;
 
 function dueLabel(
   dueDate: Date,
@@ -38,10 +42,13 @@ export default function ItemCard({
   item,
   currentUserId,
   showTemplateAction = false,
+  countdownTimeZone,
 }: {
   item: ItemWithRelations;
   currentUserId: string;
   showTemplateAction?: boolean;
+  /** When set, shows a live countdown ring to the due instant, evaluated in this timezone. */
+  countdownTimeZone?: string;
 }) {
   const { text, tone } = dueLabel(item.dueDate, item.completedAt);
   const isOwner = item.ownerId === currentUserId;
@@ -72,15 +79,30 @@ export default function ItemCard({
     </div>
   );
 
+  // An item without a time is due by the end of its day, not the start of it.
+  const countdown =
+    countdownTimeZone && !item.completedAt ? (
+      <DueCountdown
+        dueAt={new Date(
+          computeDueInstant(item.dueDate, item.dueTime ?? "23:59", countdownTimeZone).getTime() +
+            (item.dueTime ? 0 : 60_000)
+        ).toISOString()}
+        windowMs={COUNTDOWN_WINDOW_DAYS * 24 * 60 * 60 * 1000}
+      />
+    ) : null;
+
   const visibilityBadge = (
-    <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500" title={visibilityLabel}>
-      {visibilityLabel}
-    </span>
+    <div className="flex shrink-0 items-center gap-3">
+      <span className="text-xs text-slate-400 dark:text-slate-500" title={visibilityLabel}>
+        {visibilityLabel}
+      </span>
+      {countdown}
+    </div>
   );
 
   if (!isOwner) {
     return (
-      <div className={`flex items-center justify-between rounded-md border px-4 py-3 ${toneClasses[tone]}`}>
+      <div className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 ${toneClasses[tone]}`}>
         {left}
         {visibilityBadge}
       </div>
@@ -109,7 +131,7 @@ export default function ItemCard({
   return (
     <Link
       href={`/items/${item.id}/edit`}
-      className={`flex items-center justify-between rounded-md border px-4 py-3 hover:border-slate-400 dark:hover:border-slate-600 ${toneClasses[tone]}`}
+      className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 hover:border-slate-400 dark:hover:border-slate-600 ${toneClasses[tone]}`}
     >
       {left}
       {visibilityBadge}

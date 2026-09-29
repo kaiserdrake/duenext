@@ -40,8 +40,8 @@ function CalendarIcon() {
  * `<input type="date">` forces on you - which also can't be told to
  * display YYYY-MM-DD specifically, since that follows the browser's own
  * locale setting, not anything the page controls. A picker is still
- * available via the calendar button, backed by a visually-hidden native
- * date input synced to the same value.
+ * available via the calendar icon, which is a transparent native date
+ * input synced to the same value.
  *
  * Dashes are inserted automatically as digits are typed, since iOS's
  * numeric keypad (triggered by `inputMode="numeric"`) has no "-" key.
@@ -57,7 +57,6 @@ export default function DateInput({
   required?: boolean;
   className?: string;
 }) {
-  const pickerRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLInputElement>(null);
   const pendingCursorRef = useRef<number | null>(null);
 
@@ -102,23 +101,27 @@ export default function DateInput({
         maxLength={10}
         className={`${className} w-full pr-9`}
       />
-      <button
-        type="button"
-        tabIndex={-1}
-        onClick={() => pickerRef.current?.showPicker?.()}
-        aria-label="Open calendar"
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
-      >
+      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
         <CalendarIcon />
-      </button>
+      </span>
+      {/* The native date input itself is the (transparent) tap target over the
+          icon: iOS Safari won't open its picker from a scripted showPicker()
+          on a hidden input, only from a real tap on the input. Desktop
+          browsers only open it from the indicator, hence the showPicker too. */}
       <input
-        ref={pickerRef}
         type="date"
         tabIndex={-1}
-        aria-hidden="true"
+        aria-label="Open calendar"
         value={ISO_DATE_PATTERN.test(value) ? value : ""}
         onChange={(e) => onChange(e.target.value)}
-        className="pointer-events-none absolute inset-0 opacity-0"
+        onClick={(e) => {
+          try {
+            e.currentTarget.showPicker?.();
+          } catch {
+            // Unsupported or not allowed here - the native tap behavior still applies.
+          }
+        }}
+        className="absolute inset-y-0 right-0 w-9 cursor-pointer appearance-none bg-transparent text-base opacity-0"
       />
     </div>
   );

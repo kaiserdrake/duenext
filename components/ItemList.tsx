@@ -32,10 +32,12 @@ function Section({
   title,
   items,
   currentUserId,
+  countdownTimeZone,
 }: {
   title: string;
   items: ItemWithRelations[];
   currentUserId: string;
+  countdownTimeZone?: string;
 }) {
   if (items.length === 0) return null;
   return (
@@ -43,7 +45,7 @@ function Section({
       <h2 className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h2>
       <div className="flex flex-col gap-2">
         {items.map((item) => (
-          <ItemCard key={item.id} item={item} currentUserId={currentUserId} />
+          <ItemCard key={item.id} item={item} currentUserId={currentUserId} countdownTimeZone={countdownTimeZone} />
         ))}
       </div>
     </div>
@@ -75,9 +77,11 @@ function LaterSection({
 export default function ItemList({
   items,
   currentUserId,
+  timeZone,
 }: {
   items: ItemWithRelations[];
   currentUserId: string;
+  timeZone: string;
 }) {
   if (items.length === 0) {
     return (
@@ -92,7 +96,7 @@ export default function ItemList({
   return (
     <div>
       <Section title="Overdue" items={overdue} currentUserId={currentUserId} />
-      <Section title="Due soon" items={soon} currentUserId={currentUserId} />
+      <Section title="Due soon" items={soon} currentUserId={currentUserId} countdownTimeZone={timeZone} />
       <Section title="Upcoming" items={upcoming} currentUserId={currentUserId} />
       <LaterSection items={later} currentUserId={currentUserId} />
     </div>

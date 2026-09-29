@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         currentUserId={user.id}
         openTodoCount={openTodoCount}
       />
-      <ItemList items={items} currentUserId={user.id} />
+      <ItemList items={items} currentUserId={user.id} timeZone={timezone} />
     </div>
   );
 }
