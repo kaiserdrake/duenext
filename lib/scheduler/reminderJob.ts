@@ -15,7 +15,7 @@ interface RecipientCandidate {
 }
 
 export async function runReminderJob(): Promise<void> {
-  const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+  const timezone = process.env.REMINDER_TIMEZONE || "Asia/Tokyo";
   const now = new Date();
   const todayDate = parseDateOnlyString(getTodayDateString(timezone));
 

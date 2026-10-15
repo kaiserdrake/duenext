@@ -68,7 +68,7 @@ export async function PATCH(
     const recurrence = input.recurrence === undefined ? existing.recurrence : input.recurrence || null;
     if (recurrence) {
       const base = newDueDate ?? existing.dueDate;
-      const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+      const timezone = process.env.REMINDER_TIMEZONE || "Asia/Tokyo";
       const todayDate = parseDateOnlyString(getTodayDateString(timezone));
       if (base < todayDate) newDueDate = rollDueDateForward(base, recurrence, todayDate);
     }

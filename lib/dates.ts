@@ -1,4 +1,4 @@
-import { addMonths, differenceInCalendarDays } from "date-fns";
+import { addMonths } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 
 /** Days out at which an item stops being "due soon" (see `classifyDueDate`). */
@@ -9,13 +9,29 @@ export const UPCOMING_MONTHS = 6;
 
 export type DueBucket = "overdue" | "soon" | "upcoming" | "later";
 
-/** Buckets a due date relative to `today` for dashboard grouping and card styling. */
-export function classifyDueDate(dueDate: Date, today: Date = new Date()): DueBucket {
-  const days = differenceInCalendarDays(dueDate, today);
-  if (days < 0) return "overdue";
-  if (days <= DUE_SOON_DAYS) return "soon";
+/**
+ * Buckets an item for dashboard grouping and card styling. "Today" is taken
+ * in `timeZone` (not the server's local zone), and an item turns overdue the
+ * moment its deadline passes - for a timed item that's its due time, not the
+ * end of its day.
+ */
+export function classifyDueDate(
+  dueDate: Date,
+  dueTime: string | null,
+  timeZone: string,
+  now: Date = new Date()
+): DueBucket {
+  if (computeDueDeadline(dueDate, dueTime, timeZone) <= now) return "overdue";
+  const today = parseDateOnlyString(getTodayDateString(timeZone, now));
+  if (calendarDaysUntil(dueDate, timeZone, now) <= DUE_SOON_DAYS) return "soon";
   if (dueDate <= addMonths(today, UPCOMING_MONTHS)) return "upcoming";
   return "later";
+}
+
+/** Whole calendar days from today (in `timeZone`) to a date-only `dueDate`; negative once it's past. */
+export function calendarDaysUntil(dueDate: Date, timeZone: string, now: Date = new Date()): number {
+  const today = parseDateOnlyString(getTodayDateString(timeZone, now));
+  return Math.round((dueDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
 }
 
 /** Advances a UTC-midnight date-only value by one recurrence cycle. */
@@ -40,14 +56,14 @@ export function rollDueDateForward(dueDate: Date, recurrence: "MONTHLY" | "YEARL
 }
 
 /** Today's date as YYYY-MM-DD in the given IANA timezone. */
-export function getTodayDateString(timeZone: string): string {
+export function getTodayDateString(timeZone: string, now: Date = new Date()): string {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-  return formatter.format(new Date());
+  return formatter.format(now);
 }
 
 /** Formats a date-only value (assumed UTC-midnight, as Prisma @db.Date fields are) as YYYY-MM-DD. */
@@ -81,6 +97,17 @@ export function computeDueInstant(dueDate: Date, dueTime: string | null, timeZon
   const dateString = toDateOnlyString(dueDate);
   const timeString = dueTime ?? "00:00";
   return fromZonedTime(`${dateString}T${timeString}:00`, timeZone);
+}
+
+/**
+ * The instant an item stops being upcoming: its due time when it has one,
+ * otherwise the end of its day (midnight that night) in `timeZone`.
+ */
+export function computeDueDeadline(dueDate: Date, dueTime: string | null, timeZone: string): Date {
+  if (dueTime) return computeDueInstant(dueDate, dueTime, timeZone);
+  const nextDay = new Date(dueDate);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  return computeDueInstant(nextDay, null, timeZone);
 }
 
 export interface DateRange {

@@ -3,14 +3,14 @@ import ItemCard from "@/components/ItemCard";
 import OverdueSection from "@/components/OverdueSection";
 import type { ItemWithRelations } from "@/lib/items";
 
-function groupItems(items: ItemWithRelations[]) {
+function groupItems(items: ItemWithRelations[], timeZone: string) {
   const overdue: ItemWithRelations[] = [];
   const soon: ItemWithRelations[] = [];
   const upcoming: ItemWithRelations[] = [];
   const later: ItemWithRelations[] = [];
 
   for (const item of items) {
-    switch (classifyDueDate(item.dueDate)) {
+    switch (classifyDueDate(item.dueDate, item.dueTime, timeZone)) {
       case "overdue":
         overdue.push(item);
         break;
@@ -33,12 +33,14 @@ function Section({
   title,
   items,
   currentUserId,
-  countdownTimeZone,
+  timeZone,
+  showCountdown = false,
 }: {
   title: string;
   items: ItemWithRelations[];
   currentUserId: string;
-  countdownTimeZone?: string;
+  timeZone: string;
+  showCountdown?: boolean;
 }) {
   if (items.length === 0) return null;
   return (
@@ -46,7 +48,13 @@ function Section({
       <h2 className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h2>
       <div className="flex flex-col gap-2">
         {items.map((item) => (
-          <ItemCard key={item.id} item={item} currentUserId={currentUserId} countdownTimeZone={countdownTimeZone} />
+          <ItemCard
+            key={item.id}
+            item={item}
+            currentUserId={currentUserId}
+            timeZone={timeZone}
+            showCountdown={showCountdown}
+          />
         ))}
       </div>
     </div>
@@ -56,9 +64,11 @@ function Section({
 function LaterSection({
   items,
   currentUserId,
+  timeZone,
 }: {
   items: ItemWithRelations[];
   currentUserId: string;
+  timeZone: string;
 }) {
   if (items.length === 0) return null;
   return (
@@ -68,7 +78,7 @@ function LaterSection({
       </summary>
       <div className="mt-2 flex flex-col gap-2">
         {items.map((item) => (
-          <ItemCard key={item.id} item={item} currentUserId={currentUserId} />
+          <ItemCard key={item.id} item={item} currentUserId={currentUserId} timeZone={timeZone} />
         ))}
       </div>
     </details>
@@ -95,21 +105,22 @@ export default function ItemList({
     );
   }
 
-  const { overdue, soon, upcoming, later } = groupItems(items);
+  const { overdue, soon, upcoming, later } = groupItems(items, timeZone);
   const hidden = new Set(hiddenItemIds);
 
   return (
     <div>
-      <Section title="Due soon" items={soon} currentUserId={currentUserId} countdownTimeZone={timeZone} />
-      <Section title="Upcoming" items={upcoming} currentUserId={currentUserId} />
+      <Section title="Due soon" items={soon} currentUserId={currentUserId} timeZone={timeZone} showCountdown />
+      <Section title="Upcoming" items={upcoming} currentUserId={currentUserId} timeZone={timeZone} />
       {/* Below Upcoming on purpose: overdue items are often ones there's
           nothing left to do about, so they shouldn't lead the page. */}
       <OverdueSection
         visibleItems={overdue.filter((item) => !hidden.has(item.id))}
         hiddenItems={overdue.filter((item) => hidden.has(item.id))}
         currentUserId={currentUserId}
+        timeZone={timeZone}
       />
-      <LaterSection items={later} currentUserId={currentUserId} />
+      <LaterSection items={later} currentUserId={currentUserId} timeZone={timeZone} />
     </div>
   );
 }

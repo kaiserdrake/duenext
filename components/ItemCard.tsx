@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { differenceInCalendarDays, format } from "date-fns";
+import { format } from "date-fns";
 import type { ItemWithRelations } from "@/lib/items";
-import { DUE_SOON_DAYS, computeDueInstant, formatDueTime, toDateOnlyString } from "@/lib/dates";
+import {
+  DUE_SOON_DAYS,
+  calendarDaysUntil,
+  computeDueDeadline,
+  formatDueTime,
+  toDateOnlyString,
+} from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
 import DueCountdown from "@/components/DueCountdown";
 
@@ -9,16 +15,16 @@ import DueCountdown from "@/components/DueCountdown";
 const COUNTDOWN_WINDOW_DAYS = 5;
 
 function dueLabel(
-  dueDate: Date,
-  completedAt: Date | null
+  item: ItemWithRelations,
+  timeZone: string
 ): { text: string; tone: "overdue" | "soon" | "normal" | "completed" } {
-  if (completedAt) {
-    return { text: `completed ${format(completedAt, "yyyy-MM-dd")}`, tone: "completed" };
+  if (item.completedAt) {
+    return { text: `completed ${format(item.completedAt, "yyyy-MM-dd")}`, tone: "completed" };
   }
-  const days = differenceInCalendarDays(dueDate, new Date());
-  if (days < 0) {
-    const n = Math.abs(days);
-    return { text: `overdue by ${n} day${n === 1 ? "" : "s"}`, tone: "overdue" };
+  const days = calendarDaysUntil(item.dueDate, timeZone);
+  if (computeDueDeadline(item.dueDate, item.dueTime, timeZone) <= new Date()) {
+    const n = Math.max(0, -days);
+    return { text: n === 0 ? "overdue" : `overdue by ${n} day${n === 1 ? "" : "s"}`, tone: "overdue" };
   }
   if (days === 0) return { text: "due today", tone: "soon" };
   return { text: `due in ${days} day${days === 1 ? "" : "s"}`, tone: days <= DUE_SOON_DAYS ? "soon" : "normal" };
@@ -42,15 +48,18 @@ export default function ItemCard({
   item,
   currentUserId,
   showTemplateAction = false,
-  countdownTimeZone,
+  timeZone = "Asia/Tokyo",
+  showCountdown = false,
 }: {
   item: ItemWithRelations;
   currentUserId: string;
   showTemplateAction?: boolean;
-  /** When set, shows a live countdown ring to the due instant, evaluated in this timezone. */
-  countdownTimeZone?: string;
+  /** The zone "today" and the due time are read in (REMINDER_TIMEZONE). */
+  timeZone?: string;
+  /** Shows a live countdown ring to the due deadline. */
+  showCountdown?: boolean;
 }) {
-  const { text, tone } = dueLabel(item.dueDate, item.completedAt);
+  const { text, tone } = dueLabel(item, timeZone);
   const isOwner = item.ownerId === currentUserId;
 
   const visibilityLabel =
@@ -81,12 +90,9 @@ export default function ItemCard({
 
   // An item without a time is due by the end of its day, not the start of it.
   const countdown =
-    countdownTimeZone && !item.completedAt ? (
+    showCountdown && !item.completedAt ? (
       <DueCountdown
-        dueAt={new Date(
-          computeDueInstant(item.dueDate, item.dueTime ?? "23:59", countdownTimeZone).getTime() +
-            (item.dueTime ? 0 : 60_000)
-        ).toISOString()}
+        dueAt={computeDueDeadline(item.dueDate, item.dueTime, timeZone).toISOString()}
         windowMs={COUNTDOWN_WINDOW_DAYS * 24 * 60 * 60 * 1000}
       />
     ) : null;

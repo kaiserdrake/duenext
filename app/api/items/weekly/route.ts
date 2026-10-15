@@ -8,7 +8,7 @@ import { getWeekRange } from "@/lib/dates";
 export async function GET(request: NextRequest) {
   try {
     const user = await requireApiUser(request);
-    const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+    const timezone = process.env.REMINDER_TIMEZONE || "Asia/Tokyo";
     const { start, end, startLabel, endLabel } = getWeekRange(timezone);
 
     const items = await listVisibleItemsDueBetween(user.id, start, end);

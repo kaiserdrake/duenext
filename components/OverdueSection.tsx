@@ -129,10 +129,12 @@ export default function OverdueSection({
   visibleItems,
   hiddenItems,
   currentUserId,
+  timeZone,
 }: {
   visibleItems: ItemWithRelations[];
   hiddenItems: ItemWithRelations[];
   currentUserId: string;
+  timeZone: string;
 }) {
   const [showHidden, setShowHidden] = useState(false);
 
@@ -156,7 +158,7 @@ export default function OverdueSection({
         {visibleItems.map((item) => (
           <div key={item.id} className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
-              <ItemCard item={item} currentUserId={currentUserId} />
+              <ItemCard item={item} currentUserId={currentUserId} timeZone={timeZone} />
             </div>
             <HoldToHideButton itemId={item.id} />
           </div>
@@ -165,7 +167,7 @@ export default function OverdueSection({
           hiddenItems.map((item) => (
             <div key={item.id} className="flex items-center gap-2 opacity-60">
               <div className="min-w-0 flex-1">
-                <ItemCard item={item} currentUserId={currentUserId} />
+                <ItemCard item={item} currentUserId={currentUserId} timeZone={timeZone} />
               </div>
               <UnhideButton itemId={item.id} />
             </div>

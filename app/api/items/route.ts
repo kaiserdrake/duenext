@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const recurrence = input.recurrence || null;
     let dueDate = parseDateOnlyString(input.dueDate);
     if (recurrence) {
-      const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+      const timezone = process.env.REMINDER_TIMEZONE || "Asia/Tokyo";
       dueDate = rollDueDateForward(dueDate, recurrence, parseDateOnlyString(getTodayDateString(timezone)));
     }
 

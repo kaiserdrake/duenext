@@ -7,7 +7,7 @@ import DashboardSummary from "@/components/DashboardSummary";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const timezone = process.env.REMINDER_TIMEZONE || "UTC";
+  const timezone = process.env.REMINDER_TIMEZONE || "Asia/Tokyo";
   const month = getMonthRange(timezone);
   const week = getWeekRange(timezone);
   const focus = getMonthWeeksRange(timezone);
