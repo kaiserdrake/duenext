@@ -161,6 +161,7 @@ function SortableQueueCard({
             type: task.type,
             dueDate: task.dueDate ?? "",
             dueTime: task.dueTime ?? "",
+            isPrivate: task.isPrivate,
           }}
           submitLabel="Save"
           onSubmit={onSave}

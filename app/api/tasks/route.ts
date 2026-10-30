@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
           type: input.type,
           dueDate: input.dueDate ? parseDateOnlyString(input.dueDate) : null,
           dueTime: (input.dueDate && input.dueTime) || null,
+          isPrivate: input.isPrivate,
           sortOrder: (last._max.sortOrder ?? -1) + 1,
           ownerId: user.id,
         },

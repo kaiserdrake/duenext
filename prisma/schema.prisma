@@ -192,6 +192,8 @@ model Task {
   dueDate        DateTime?  @db.Date
   dueTime        String?
   item           Item?
+  // Blurred on the dashboard while privacy mode is on (see lib/privacy.ts).
+  isPrivate      Boolean    @default(false)
 
   owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId        String

@@ -171,6 +171,15 @@ export function UndoIcon() {
   );
 }
 
+function LockIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
 function CalendarIcon() {
   return (
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -228,9 +237,26 @@ export default function TaskCard({
       />
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className={`font-medium break-words ${compact ? "text-xs" : "text-sm"}`}>{task.title}</div>
+          {/* data-sensitive: private cards blur while privacy mode is on. */}
+          <div
+            className={`flex items-start gap-1 font-medium break-words ${compact ? "text-xs" : "text-sm"}`}
+          >
+            {task.isPrivate && (
+              <span className="mt-0.5 shrink-0 opacity-50" title="Private: blurred in privacy mode">
+                <LockIcon />
+              </span>
+            )}
+            <span className="min-w-0" data-sensitive={task.isPrivate || undefined}>
+              {task.title}
+            </span>
+          </div>
           {task.notes && !compact && (
-            <div className="mt-0.5 line-clamp-2 text-xs whitespace-pre-line opacity-70">{task.notes}</div>
+            <div
+              className="mt-0.5 line-clamp-2 text-xs whitespace-pre-line opacity-70"
+              data-sensitive={task.isPrivate || undefined}
+            >
+              {task.notes}
+            </div>
           )}
         </div>
       </div>

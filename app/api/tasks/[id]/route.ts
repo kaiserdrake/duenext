@@ -24,6 +24,7 @@ export async function PATCH(
           title: input.title,
           notes: input.notes === undefined ? undefined : input.notes || null,
           type: input.type,
+          isPrivate: input.isPrivate,
           // Clearing the date clears the time with it.
           dueDate: input.dueDate === undefined ? undefined : input.dueDate ? parseDateOnlyString(input.dueDate) : null,
           dueTime:

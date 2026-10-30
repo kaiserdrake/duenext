@@ -21,6 +21,8 @@ export interface TaskDTO {
   /** Optional deadline, "YYYY-MM-DD" (+ optional "HH:mm"). */
   dueDate: string | null;
   dueTime: string | null;
+  /** Blurred while the dashboard's privacy mode is on. */
+  isPrivate: boolean;
 }
 
 const MINUTE = 60;

@@ -16,6 +16,7 @@ export const taskInputSchema = z.object({
   type: taskType.default("SHORT"),
   dueDate,
   dueTime,
+  isPrivate: z.boolean().default(false),
 });
 export type TaskInput = z.infer<typeof taskInputSchema>;
 
@@ -25,6 +26,7 @@ export const taskUpdateSchema = z.object({
   type: taskType.optional(),
   dueDate,
   dueTime,
+  isPrivate: z.boolean().optional(),
 });
 export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;
 
