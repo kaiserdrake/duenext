@@ -13,9 +13,24 @@
   --task-flash-border-dim: var(--color-amber-200);
 }
 
+/* Dark mode is true black and neutral greys rather than slate's navy tint:
+   every slate shade is remapped to the matching neutral one inside .dark, so
+   the existing dark:...-slate-* classes need no changes. Slate 950 (page and
+   input backgrounds) becomes pure black. */
 .dark {
-  --background: #020617;
-  --foreground: #f1f5f9;
+  --color-slate-50: oklch(98.5% 0 0);
+  --color-slate-100: oklch(97% 0 0);
+  --color-slate-200: oklch(92.2% 0 0);
+  --color-slate-300: oklch(87% 0 0);
+  --color-slate-400: oklch(70.8% 0 0);
+  --color-slate-500: oklch(55.6% 0 0);
+  --color-slate-600: oklch(43.9% 0 0);
+  --color-slate-700: oklch(37.1% 0 0);
+  --color-slate-800: oklch(26.9% 0 0);
+  --color-slate-900: oklch(20.5% 0 0);
+  --color-slate-950: #000;
+  --background: #000;
+  --foreground: oklch(97% 0 0);
   /* Native controls (date/time pickers, scrollbars) in their dark style too. */
   color-scheme: dark;
   --task-flash-bg: color-mix(in oklab, var(--color-amber-500) 22%, transparent);
