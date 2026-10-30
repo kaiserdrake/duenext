@@ -106,7 +106,7 @@ export const {
     async authorized({ request, auth }) {
       const { pathname } = request.nextUrl;
 
-      if (pathname.startsWith("/admin")) {
+      if (pathname.startsWith("/settings/users")) {
         return auth?.user?.role === "ADMIN";
       }
 

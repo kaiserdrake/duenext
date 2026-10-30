@@ -13,6 +13,23 @@
   --color-foreground: var(--foreground);
 }
 
+/* Task board: the Active section blinks amber once its timer runs out. */
+@theme {
+  --animate-task-flash: task-flash 1s ease-in-out infinite;
+
+  @keyframes task-flash {
+    0%,
+    100% {
+      background-color: var(--color-amber-100);
+      border-color: var(--color-amber-400);
+    }
+    50% {
+      background-color: transparent;
+      border-color: var(--color-amber-200);
+    }
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -20,4 +37,11 @@ body {
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans",
     "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, Helvetica,
     Arial, sans-serif;
+}
+
+/* Dashboard privacy mode: item details stay on screen as shapes (so you can
+   see something's there) but aren't legible until privacy mode is off. */
+[data-privacy="on"] [data-sensitive] {
+  filter: blur(6px);
+  user-select: none;
 }

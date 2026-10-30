@@ -90,12 +90,15 @@ export default function ItemList({
   currentUserId,
   timeZone,
   hiddenItemIds = [],
+  privacyMode = false,
 }: {
   items: ItemWithRelations[];
   currentUserId: string;
   timeZone: string;
   /** Overdue items the user has hidden; they sit behind a "Show hidden" toggle. */
   hiddenItemIds?: string[];
+  /** Show only items due soon (blurred by the page); everything else is summarised as a count. */
+  privacyMode?: boolean;
 }) {
   if (items.length === 0) {
     return (
@@ -107,6 +110,19 @@ export default function ItemList({
 
   const { overdue, soon, upcoming, later } = groupItems(items, timeZone);
   const hidden = new Set(hiddenItemIds);
+
+  if (privacyMode) {
+    const concealed = upcoming.length + later.length + overdue.filter((item) => !hidden.has(item.id)).length;
+    return (
+      <div>
+        <Section title="Due soon" items={soon} currentUserId={currentUserId} timeZone={timeZone} showCountdown />
+        <div className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          Privacy mode is on
+          {concealed > 0 ? `: ${concealed} item${concealed === 1 ? "" : "s"} not due soon ${concealed === 1 ? "is" : "are"} hidden.` : "."}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

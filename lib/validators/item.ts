@@ -1,12 +1,23 @@
 import { z } from "zod";
-import { DEFAULT_REMINDER_OFFSETS_MINUTES, REMINDER_OFFSET_STEP_MINUTES } from "@/lib/constants";
+import {
+  ACTION_ITEM_CATEGORY,
+  DEFAULT_REMINDER_OFFSETS_MINUTES,
+  REMINDER_OFFSET_STEP_MINUTES,
+  isActionItemCategory,
+} from "@/lib/constants";
 
 // No defaults here: `itemUpdateSchema` reuses these bare fields so that an
 // omitted field stays `undefined` (Prisma's `update` treats `undefined` as
 // "leave unchanged"), rather than being silently reset to a default value.
 const itemFieldsSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200),
-  category: z.string().trim().max(100).optional().nullable(),
+  category: z
+    .string()
+    .trim()
+    .max(100)
+    .refine((c) => !isActionItemCategory(c), `"${ACTION_ITEM_CATEGORY}" items come from the task board - add a deadline to a task there instead`)
+    .optional()
+    .nullable(),
   dueDate: z.iso.date("Enter a valid date"),
   dueTime: z.iso
     .time({ precision: -1, error: "Enter a valid time" })

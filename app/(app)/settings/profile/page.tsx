@@ -8,7 +8,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-1 text-lg font-medium">Profile</h1>
+      <h2 className="mb-1 text-base font-medium">Profile</h2>
       <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
         Manage your account and how you receive reminders.
       </p>
@@ -21,6 +21,7 @@ export default async function ProfilePage() {
           ntfyAccessToken: profile.ntfyAccessToken ?? "",
           notifyByEmail: profile.notifyByEmail,
           notifyByNtfy: profile.notifyByNtfy,
+          taskBoardEnabled: profile.taskBoardEnabled,
           apiTokenSet: profile.apiTokenHash !== null,
         }}
       />

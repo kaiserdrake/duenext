@@ -18,6 +18,8 @@ export default async function EditItemPage({
 
   if (!item) notFound();
   if (item.ownerId !== user.id) redirect("/");
+  // Action Items mirror a task-board card; they're edited there.
+  if (item.taskId) redirect("/?tab=tasks");
 
   return (
     <div className="mx-auto max-w-lg">

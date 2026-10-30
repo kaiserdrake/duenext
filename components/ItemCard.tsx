@@ -10,6 +10,7 @@ import {
 } from "@/lib/dates";
 import CategoryIcon from "@/components/CategoryIcon";
 import DueCountdown from "@/components/DueCountdown";
+import { isActionItemCategory } from "@/lib/constants";
 
 /** How far out the countdown ring starts draining; items further out show a full ring. */
 const COUNTDOWN_WINDOW_DAYS = 5;
@@ -61,6 +62,10 @@ export default function ItemCard({
 }) {
   const { text, tone } = dueLabel(item, timeZone);
   const isOwner = item.ownerId === currentUserId;
+  // Action Items mirror a task-board card: open the board rather than the
+  // item editor, and don't offer them as a template for a new item.
+  const editHref = item.taskId ? "/?tab=tasks" : `/items/${item.id}/edit`;
+  const templatable = !isActionItemCategory(item.category);
 
   const visibilityLabel =
     item.visibility === "PRIVATE"
@@ -71,18 +76,20 @@ export default function ItemCard({
 
   const left = (
     <div className="flex items-center gap-2.5">
-      <CategoryIcon
-        category={item.category}
-        className="shrink-0 text-slate-400 dark:text-slate-500"
-      />
+      {/* data-sensitive: blurred in the dashboard's privacy mode. */}
+      <span className="flex shrink-0" data-sensitive>
+        <CategoryIcon category={item.category} className="text-slate-400 dark:text-slate-500" />
+      </span>
       <div>
-        <div className="text-sm font-medium">{item.title}</div>
+        <div className="text-sm font-medium" data-sensitive>
+          {item.title}
+        </div>
         <div className={`text-xs ${toneTextClasses[tone]}`}>
-          {item.category ? `${item.category} · ` : ""}
+          {item.category ? <span data-sensitive>{item.category} · </span> : ""}
           {text} · {toDateOnlyString(item.dueDate)}
           {item.dueTime ? ` at ${formatDueTime(item.dueTime)}` : ""}
           {item.recurrence ? ` · ↻ ${item.recurrence === "YEARLY" ? "yearly" : "monthly"}` : ""}
-          {!isOwner && item.owner.name ? ` · shared by ${item.owner.name}` : ""}
+          {!isOwner && item.owner.name ? <span data-sensitive> · shared by {item.owner.name}</span> : ""}
         </div>
       </div>
     </div>
@@ -115,10 +122,10 @@ export default function ItemCard({
     );
   }
 
-  if (showTemplateAction) {
+  if (showTemplateAction && templatable) {
     return (
       <div className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 ${toneClasses[tone]}`}>
-        <Link href={`/items/${item.id}/edit`} className="min-w-0 flex-1 hover:opacity-80">
+        <Link href={editHref} className="min-w-0 flex-1 hover:opacity-80">
           {left}
         </Link>
         <div className="flex shrink-0 items-center gap-3">
@@ -136,7 +143,7 @@ export default function ItemCard({
 
   return (
     <Link
-      href={`/items/${item.id}/edit`}
+      href={editHref}
       className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 hover:border-slate-400 dark:hover:border-slate-600 ${toneClasses[tone]}`}
     >
       {left}

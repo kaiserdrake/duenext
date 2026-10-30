@@ -6,7 +6,7 @@ export default async function NewUserPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 text-lg font-medium">New user</h1>
+      <h2 className="mb-6 text-base font-medium">New user</h2>
       <UserForm currentUserId={admin.id} />
     </div>
   );

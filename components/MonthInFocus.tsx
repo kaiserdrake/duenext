@@ -155,7 +155,8 @@ export default function MonthInFocus({
                       item.ownerId === currentUserId ? (
                         <Link
                           key={item.id}
-                          href={`/items/${item.id}/edit`}
+                          href={item.taskId ? "/?tab=tasks" : `/items/${item.id}/edit`}
+                          data-sensitive
                           className="flex items-center gap-1.5 hover:underline"
                         >
                           <CategoryIcon
@@ -167,6 +168,7 @@ export default function MonthInFocus({
                       ) : (
                         <span
                           key={item.id}
+                          data-sensitive
                           className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300"
                         >
                           <CategoryIcon

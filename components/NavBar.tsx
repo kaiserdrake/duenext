@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import type { CurrentUser } from "@/lib/auth-utils";
 
@@ -8,8 +9,26 @@ const NAV_LINKS = [
   { href: "/", label: "Dashboard" },
   { href: "/items/new", label: "New item" },
   { href: "/archive", label: "Archive" },
-  { href: "/profile", label: "Profile" },
 ];
+
+function GearIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -36,8 +55,11 @@ function MenuIcon({ open }: { open: boolean }) {
 export default function NavBar({
   user,
   signOutButton,
+  wideDashboard = false,
 }: {
   user: CurrentUser;
+  /** The dashboard runs wider when it has the task board beside it (see AppMain). */
+  wideDashboard?: boolean;
   // Rendered by the parent Server Component and passed down, rather than
   // imported here directly - SignOutButton calls the server-only `signOut`
   // (which pulls in Prisma/pg), and importing a Server Component into a
@@ -46,18 +68,18 @@ export default function NavBar({
   signOutButton: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const links =
-    user.role === "ADMIN" ? [...NAV_LINKS, { href: "/admin/users", label: "Settings" }] : NAV_LINKS;
+  const pathname = usePathname();
+  const wide = wideDashboard && pathname === "/";
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+      <div className={`mx-auto flex h-14 max-w-4xl items-center justify-between px-4 ${wide ? "lg:max-w-7xl" : ""}`}>
         <div className="flex items-center gap-6">
           <Link href="/" className="font-medium">
             DueNext
           </Link>
           <nav className="hidden items-center gap-4 text-sm text-slate-600 dark:text-slate-400 sm:flex">
-            {links.map((link) => (
+            {NAV_LINKS.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-slate-900 dark:hover:text-white">
                 {link.label}
               </Link>
@@ -65,7 +87,14 @@ export default function NavBar({
           </nav>
         </div>
         <div className="hidden items-center gap-4 sm:flex">
-          <span className="text-sm text-slate-500 dark:text-slate-400">{user.name}</span>
+          <Link
+            href="/settings"
+            title="Settings"
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            {user.name}
+            <GearIcon />
+          </Link>
           {signOutButton}
         </div>
         <button
@@ -80,7 +109,7 @@ export default function NavBar({
       </div>
       {open && (
         <nav className="flex flex-col gap-1 border-t border-slate-200 px-4 py-3 text-sm sm:hidden dark:border-slate-800">
-          {links.map((link) => (
+          {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -91,7 +120,14 @@ export default function NavBar({
             </Link>
           ))}
           <div className="mt-2 flex items-center justify-between border-t border-slate-200 px-2 pt-3 dark:border-slate-800">
-            <span className="text-sm text-slate-500 dark:text-slate-400">{user.name}</span>
+            <Link
+              href="/settings"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              {user.name}
+              <GearIcon />
+            </Link>
             {signOutButton}
           </div>
         </nav>

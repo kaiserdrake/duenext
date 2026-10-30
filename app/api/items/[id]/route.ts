@@ -50,6 +50,7 @@ export async function PATCH(
     const existing = await prisma.item.findUnique({ where: { id } });
     if (!existing) throw new AuthError("Item not found", 404);
     if (existing.ownerId !== user.id) throw new AuthError("Not allowed", 403);
+    if (existing.taskId) throw new AuthError("This Action Item is managed from the task board", 409);
 
     const body = await request.json();
     const input = itemUpdateSchema.parse(body);
@@ -127,6 +128,7 @@ export async function DELETE(
     const existing = await prisma.item.findUnique({ where: { id } });
     if (!existing) throw new AuthError("Item not found", 404);
     if (existing.ownerId !== user.id) throw new AuthError("Not allowed", 403);
+    if (existing.taskId) throw new AuthError("This Action Item is managed from the task board", 409);
 
     await prisma.item.delete({ where: { id } });
     return NextResponse.json({ ok: true });

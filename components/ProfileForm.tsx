@@ -20,6 +20,7 @@ export interface ProfileFormValues {
   ntfyAccessToken: string;
   notifyByEmail: boolean;
   notifyByNtfy: boolean;
+  taskBoardEnabled: boolean;
   apiTokenSet: boolean;
 }
 
@@ -37,6 +38,7 @@ export default function ProfileForm({
   const [ntfyAccessToken, setNtfyAccessToken] = useState(initial.ntfyAccessToken);
   const [notifyByEmail, setNotifyByEmail] = useState(initial.notifyByEmail);
   const [notifyByNtfy, setNotifyByNtfy] = useState(initial.notifyByNtfy);
+  const [taskBoardEnabled, setTaskBoardEnabled] = useState(initial.taskBoardEnabled);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -155,6 +157,7 @@ export default function ProfileForm({
         ntfyAccessToken,
         notifyByEmail,
         notifyByNtfy,
+        taskBoardEnabled,
         ...(newPassword ? { currentPassword, newPassword } : {}),
       }),
     });
@@ -289,6 +292,25 @@ export default function ProfileForm({
             )}
           </div>
         </div>
+      </fieldset>
+
+      <fieldset className="rounded-md border border-slate-200 p-4 dark:border-slate-800">
+        <legend className="px-1 text-sm font-medium">Features</legend>
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={taskBoardEnabled}
+            onChange={(e) => setTaskBoardEnabled(e.target.checked)}
+            className="mt-0.5 h-auto w-auto"
+          />
+          <span>
+            Task board
+            <span className="block text-xs text-slate-500 dark:text-slate-400">
+              Adds a focus-timer board to the dashboard: drag task cards into Active to run a
+              25 or 55 minute work timer (or a count-up), then take a 5 minute break.
+            </span>
+          </span>
+        </label>
       </fieldset>
 
       <fieldset className="rounded-md border border-slate-200 p-4 dark:border-slate-800">
