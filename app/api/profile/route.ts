@@ -15,6 +15,7 @@ const profileSelect = {
   ntfyAccessToken: true,
   notifyByEmail: true,
   notifyByNtfy: true,
+  taskBoardEnabled: true,
   apiTokenHash: true,
 } as const;
 
@@ -71,6 +72,7 @@ export async function PATCH(request: NextRequest) {
           input.ntfyAccessToken === undefined ? undefined : input.ntfyAccessToken || null,
         notifyByEmail: input.notifyByEmail,
         notifyByNtfy: input.notifyByNtfy,
+        taskBoardEnabled: input.taskBoardEnabled,
       },
       select: profileSelect,
     });

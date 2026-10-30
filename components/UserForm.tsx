@@ -55,7 +55,7 @@ export default function UserForm({
       return;
     }
 
-    router.push("/admin/users");
+    router.push("/settings/users");
     router.refresh();
   }
 
@@ -67,7 +67,7 @@ export default function UserForm({
     setSubmitting(true);
     const res = await fetch(`/api/users/${initial.id}`, { method: "DELETE" });
     if (res.ok) {
-      router.push("/admin/users");
+      router.push("/settings/users");
       router.refresh();
     } else {
       const data = await res.json().catch(() => ({}));
@@ -171,7 +171,7 @@ export default function UserForm({
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => router.push("/admin/users")}
+            onClick={() => router.push("/settings/users")}
             className="h-9 rounded-md border border-slate-300 px-4 text-sm dark:border-slate-700"
           >
             Cancel

@@ -8,8 +8,8 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 /*
- * One shared 1s clock for every countdown on the page, rather than an
- * interval per card. The server snapshot is null so the markup hydrates
+ * One shared 1s clock for every countdown on the page (task board timers
+ * included), rather than an interval per card. The server snapshot is null so the markup hydrates
  * without a time mismatch; the ring then sweeps in on the first client tick.
  */
 let now = Date.now();
@@ -34,7 +34,7 @@ function subscribe(listener: () => void) {
   };
 }
 
-function useNow(): number | null {
+export function useNow(): number | null {
   return useSyncExternalStore(
     subscribe,
     () => now,

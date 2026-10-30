@@ -28,6 +28,23 @@ enum Recurrence {
   YEARLY
 }
 
+enum TaskType {
+  SHORT
+  LONG
+  FREE
+}
+
+enum TaskStatus {
+  QUEUED
+  ACTIVE
+  DONE
+}
+
+enum TaskPhase {
+  WORK
+  REST
+}
+
 model User {
   id              String   @id @default(cuid())
   email           String   @unique
@@ -47,10 +64,15 @@ model User {
   // token per user; regenerating replaces it, invalidating the old one.
   apiTokenHash    String?  @unique
 
+  // Opt-in focus-timer task board on the dashboard. Off by default; turning
+  // it off again keeps the user's tasks around for when it's re-enabled.
+  taskBoardEnabled Boolean @default(false)
+
   items           Item[]
   reminderLogs    ReminderLog[]
   sharedItems     ItemShare[]
   hiddenItems     ItemHide[]
+  tasks           Task[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -83,6 +105,13 @@ model Item {
   reminderLogs    ReminderLog[]
   sharedWith      ItemShare[]
   hiddenBy        ItemHide[]
+
+  // Set on the "Action Item" mirror of a task-board card that has a
+  // deadline (see lib/tasks.ts syncTaskItem). Such items are managed from
+  // the task board, not edited here. Nulled (not deleted) when the task is
+  // cleared out of Done, so the completed item stays in the archive.
+  task            Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  taskId          String?       @unique
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -137,4 +166,38 @@ model ReminderLog {
   @@unique([itemId, userId, offsetMinutes, channel])
   @@index([itemId])
   @@index([userId])
+}
+
+// A card on the dashboard task board (Pomodoro-style focus timer). Private to
+// its owner. At most one per user is ACTIVE; its running phase is stored
+// here rather than in the browser so a reload (or another device) picks the
+// timer up where it left off.
+model Task {
+  id             String     @id @default(cuid())
+  title          String
+  notes          String?
+  type           TaskType   @default(SHORT)
+  status         TaskStatus @default(QUEUED)
+  // Queue position (lower sorts first, i.e. higher priority).
+  sortOrder      Int        @default(0)
+  // Only set while ACTIVE: which phase is running and since when.
+  phase          TaskPhase?
+  phaseStartedAt DateTime?
+  // Total work time banked across sessions, and finished work phases.
+  workedSeconds  Int        @default(0)
+  rounds         Int        @default(0)
+  completedAt    DateTime?
+  // Optional deadline. When set, the task also shows on the appointments
+  // side as an "Action Item" (the linked `item`).
+  dueDate        DateTime?  @db.Date
+  dueTime        String?
+  item           Item?
+
+  owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId        String
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([ownerId, status])
 }

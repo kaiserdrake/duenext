@@ -13,9 +13,9 @@ export default async function AdminUsersPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-lg font-medium">Users</h1>
+        <h2 className="text-base font-medium">Users</h2>
         <Link
-          href="/admin/users/new"
+          href="/settings/users/new"
           className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           New user

@@ -6,7 +6,12 @@ import ReminderOffsetsInput from "@/components/ReminderOffsetsInput";
 import UserPicker from "@/components/UserPicker";
 import CategorySelect from "@/components/CategorySelect";
 import DateInput from "@/components/DateInput";
-import { DEFAULT_REMINDER_OFFSETS_MINUTES, RECURRENCE_OPTIONS } from "@/lib/constants";
+import {
+  ACTION_ITEM_CATEGORY,
+  DEFAULT_REMINDER_OFFSETS_MINUTES,
+  RECURRENCE_OPTIONS,
+  isActionItemCategory,
+} from "@/lib/constants";
 
 type Visibility = "PRIVATE" | "SHARED" | "CUSTOM";
 type Recurrence = "MONTHLY" | "YEARLY" | "";
@@ -63,6 +68,10 @@ export default function ItemForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (isActionItemCategory(category)) {
+      setError(`"${ACTION_ITEM_CATEGORY}" items come from the task board. Add a deadline to a task there instead.`);
+      return;
+    }
     setSubmitting(true);
 
     const payload = {

@@ -5,7 +5,7 @@ import UserForm from "@/components/UserForm";
 
 export default async function EditUserPage({
   params,
-}: PageProps<"/admin/users/[id]">) {
+}: PageProps<"/settings/users/[id]">) {
   const { id } = await params;
   const admin = await requireAdmin();
 
@@ -18,7 +18,7 @@ export default async function EditUserPage({
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 text-lg font-medium">Edit user</h1>
+      <h2 className="mb-6 text-base font-medium">Edit user</h2>
       <UserForm currentUserId={admin.id} initial={user} />
     </div>
   );

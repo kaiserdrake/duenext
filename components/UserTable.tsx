@@ -24,7 +24,7 @@ export default function UserTable({ users }: { users: UserRow[] }) {
           {users.map((user) => (
             <tr key={user.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800/60">
               <td className="px-4 py-2">
-                <Link href={`/admin/users/${user.id}`} className="hover:underline">
+                <Link href={`/settings/users/${user.id}`} className="hover:underline">
                   {user.name}
                 </Link>
               </td>

@@ -10,6 +10,7 @@ export const profileUpdateSchema = z
     ntfyAccessToken: z.string().trim().max(500).optional().nullable().or(z.literal("")),
     notifyByEmail: z.boolean().optional(),
     notifyByNtfy: z.boolean().optional(),
+    taskBoardEnabled: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.newPassword && !data.currentPassword) {

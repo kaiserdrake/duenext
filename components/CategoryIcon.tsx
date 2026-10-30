@@ -23,6 +23,12 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
       <path d="M16 2v4M8 2v4M3 10h18" />
     </>
   ),
+  "action item": (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M8 12.5l3 3 5-6" />
+    </>
+  ),
   event: (
     <>
       <rect x="3" y="4" width="18" height="18" rx="2" />
