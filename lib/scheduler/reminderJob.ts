@@ -34,6 +34,10 @@ export async function runReminderJob(): Promise<void> {
   const activeUsersById = new Map(activeUsers.map((u) => [u.id, u]));
 
   for (const item of items) {
+    // Action Items (task-board deadlines) are tracked on the board and send
+    // no reminders on any channel.
+    if (item.taskId) continue;
+
     // Recurring items roll forward once overdue, rather than sitting in
     // Overdue forever - e.g. a yearly birthday jumps to next year. Reminder
     // logs are cleared so the new cycle's reminders aren't suppressed by
