@@ -30,6 +30,12 @@
   }
 }
 
+/* Always reserve the scrollbar's space, so the layout doesn't shift sideways
+   between pages that scroll and pages that don't. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

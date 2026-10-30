@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import type { CurrentUser } from "@/lib/auth-utils";
 
@@ -58,7 +57,11 @@ export default function NavBar({
   wideDashboard = false,
 }: {
   user: CurrentUser;
-  /** The dashboard runs wider when it has the task board beside it (see AppMain). */
+  /**
+   * The dashboard runs wider when it has the task board beside it (see
+   * AppMain). The header uses that width on every page, so it doesn't shift
+   * when you move between pages.
+   */
   wideDashboard?: boolean;
   // Rendered by the parent Server Component and passed down, rather than
   // imported here directly - SignOutButton calls the server-only `signOut`
@@ -68,12 +71,10 @@ export default function NavBar({
   signOutButton: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  const wide = wideDashboard && pathname === "/";
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className={`mx-auto flex h-14 max-w-4xl items-center justify-between px-4 ${wide ? "lg:max-w-7xl" : ""}`}>
+      <div className={`mx-auto flex h-14 max-w-4xl items-center justify-between px-4 ${wideDashboard ? "lg:max-w-7xl" : ""}`}>
         <div className="flex items-center gap-6">
           <Link href="/" className="font-medium">
             DueNext
