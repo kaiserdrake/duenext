@@ -51,6 +51,8 @@ export async function syncTaskItem(db: Tx | typeof prisma, task: Task): Promise<
       ...data,
       category: ACTION_ITEM_CATEGORY,
       visibility: "PRIVATE",
+      // No reminders: the reminder job skips Action Items anyway.
+      reminderOffsetsMinutes: [],
       ownerId: task.ownerId,
       taskId: task.id,
     },
