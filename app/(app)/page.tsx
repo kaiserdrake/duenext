@@ -86,11 +86,12 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
           initialTab={tab === "tasks" ? "tasks" : "appointments"}
           appointments={appointments}
           tasks={
-            <>
+            // Private cards blur in privacy mode, like appointment details.
+            <div data-privacy={privacyMode ? "on" : undefined}>
               {/* On phones the tab already says "Tasks". */}
               {sectionHeading("Tasks", undefined, "hidden lg:flex")}
               <TaskBoard initialTasks={await listTasks(user.id)} />
-            </>
+            </div>
           }
         />
       ) : (

@@ -15,6 +15,7 @@ export interface TaskFormValues {
   /** "YYYY-MM-DD" or "" for no deadline. */
   dueDate: string;
   dueTime: string;
+  isPrivate: boolean;
 }
 
 /** Add/edit form for a task card, styled as a blank post-it of the chosen type. */
@@ -34,6 +35,7 @@ export default function TaskForm({
   const [type, setType] = useState<TaskType>(initial?.type ?? "SHORT");
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [dueTime, setDueTime] = useState(initial?.dueTime ?? "");
+  const [isPrivate, setIsPrivate] = useState(initial?.isPrivate ?? false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -54,6 +56,7 @@ export default function TaskForm({
       type,
       dueDate,
       dueTime: dueDate ? dueTime : "",
+      isPrivate,
     });
     setSubmitting(false);
     if (message) setError(message);
@@ -141,6 +144,16 @@ export default function TaskForm({
           Deadline (optional): shows in Appointments as an {ACTION_ITEM_CATEGORY}.
         </p>
       </div>
+      <label className="flex items-center gap-1.5 text-xs">
+        <input
+          type="checkbox"
+          checked={isPrivate}
+          onChange={(e) => setIsPrivate(e.target.checked)}
+          className="h-auto w-auto"
+        />
+        Private
+        <span className="opacity-60">· blurred when privacy mode is on</span>
+      </label>
       {error && <p className="text-xs text-red-700">{error}</p>}
       <div className="flex justify-end gap-2">
         <button

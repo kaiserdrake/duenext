@@ -24,6 +24,7 @@ export function toTaskDTO(task: Task): TaskDTO {
     completedAt: task.completedAt?.toISOString() ?? null,
     dueDate: task.dueDate ? toDateOnlyString(task.dueDate) : null,
     dueTime: task.dueTime,
+    isPrivate: task.isPrivate,
   };
 }
 
