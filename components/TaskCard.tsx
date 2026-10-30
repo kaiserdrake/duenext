@@ -9,9 +9,9 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 /** Post-it paper colour per task type. */
 export const PAPER_CLASSES: Record<TaskType, string> = {
-  SHORT: "bg-amber-100 text-amber-950 dark:bg-amber-200 dark:text-amber-950",
-  LONG: "bg-sky-100 text-sky-950 dark:bg-sky-200 dark:text-sky-950",
-  FREE: "bg-lime-100 text-lime-950 dark:bg-lime-200 dark:text-lime-950",
+  SHORT: "bg-amber-100 text-amber-950 dark:bg-amber-200/90 dark:text-amber-950",
+  LONG: "bg-sky-100 text-sky-950 dark:bg-sky-200/90 dark:text-sky-950",
+  FREE: "bg-lime-100 text-lime-950 dark:bg-lime-200/90 dark:text-lime-950",
 };
 
 const BADGE_CLASSES: Record<TaskType, string> = {

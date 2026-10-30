@@ -592,7 +592,7 @@ function ActiveZone({
         ref={setNodeRef}
         className={`rounded-lg border-2 border-dashed p-3 transition-colors ${
           clock.expired
-            ? "border-amber-400 motion-safe:animate-task-flash motion-reduce:bg-amber-100"
+            ? "border-amber-400 motion-safe:animate-task-flash motion-reduce:bg-amber-100 dark:motion-reduce:bg-amber-950/60"
             : highlighted
               ? "border-sky-400 bg-sky-50 dark:bg-sky-950/40"
               : dragging

@@ -1,11 +1,26 @@
 @import "tailwindcss";
 
-/* Light theme only - never activate dark: utilities via system preference. */
+/* dark: utilities follow the `dark` class on <html> (set from the theme
+   switch in the header - see lib/theme.ts), not the OS preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  /* Task board time's-up flash: a pale wash in light, a deep one in dark. */
+  --task-flash-bg: var(--color-amber-100);
+  --task-flash-border: var(--color-amber-400);
+  --task-flash-border-dim: var(--color-amber-200);
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  /* Native controls (date/time pickers, scrollbars) in their dark style too. */
+  color-scheme: dark;
+  --task-flash-bg: color-mix(in oklab, var(--color-amber-500) 22%, transparent);
+  --task-flash-border: var(--color-amber-500);
+  --task-flash-border-dim: var(--color-amber-800);
 }
 
 @theme inline {
@@ -20,12 +35,12 @@
   @keyframes task-flash {
     0%,
     100% {
-      background-color: var(--color-amber-100);
-      border-color: var(--color-amber-400);
+      background-color: var(--task-flash-bg);
+      border-color: var(--task-flash-border);
     }
     50% {
       background-color: transparent;
-      border-color: var(--color-amber-200);
+      border-color: var(--task-flash-border-dim);
     }
   }
 }
