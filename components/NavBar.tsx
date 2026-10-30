@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { CurrentUser } from "@/lib/auth-utils";
+import ThemeSwitch from "@/components/ThemeSwitch";
 
 const NAV_LINKS = [
   { href: "/", label: "Dashboard" },
@@ -55,6 +56,7 @@ export default function NavBar({
   user,
   signOutButton,
   wideDashboard = false,
+  themeInitial,
 }: {
   user: CurrentUser;
   /**
@@ -63,6 +65,8 @@ export default function NavBar({
    * when you move between pages.
    */
   wideDashboard?: boolean;
+  /** This browser's saved theme preference (cookie), for the theme switch. */
+  themeInitial?: string;
   // Rendered by the parent Server Component and passed down, rather than
   // imported here directly - SignOutButton calls the server-only `signOut`
   // (which pulls in Prisma/pg), and importing a Server Component into a
@@ -87,26 +91,29 @@ export default function NavBar({
             ))}
           </nav>
         </div>
-        <div className="hidden items-center gap-4 sm:flex">
-          <Link
-            href="/settings"
-            title="Settings"
-            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        <div className="flex items-center gap-3 sm:gap-4">
+          <ThemeSwitch initial={themeInitial} />
+          <div className="hidden items-center gap-4 sm:flex">
+            <Link
+              href="/settings"
+              title="Settings"
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              {user.name}
+              <GearIcon />
+            </Link>
+            {signOutButton}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white sm:hidden"
           >
-            {user.name}
-            <GearIcon />
-          </Link>
-          {signOutButton}
+            <MenuIcon open={open} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white sm:hidden"
-        >
-          <MenuIcon open={open} />
-        </button>
       </div>
       {open && (
         <nav className="flex flex-col gap-1 border-t border-slate-200 px-4 py-3 text-sm sm:hidden dark:border-slate-800">
